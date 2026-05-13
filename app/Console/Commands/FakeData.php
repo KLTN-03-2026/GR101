@@ -35,29 +35,6 @@ class FakeData extends Command {
         Artisan::call('migrate --seed');
         Artisan::call('import-city');
         File::cleanDirectory(public_path('product_images'));
-        File::cleanDirectory(public_path('banner_images'));
-
-        $listBanner = [];
-
-        foreach (File::glob(storage_path('banner_fake/*')) as $key => $image) {
-            $key++;
-
-            if (!File::isDirectory(public_path('banner_images/' . $key))) {
-                File::makeDirectory(public_path('banner_images/' . $key), 0777, true, true);
-            }
-
-            $imageName = explode('/', $image);
-            $imageName = $imageName[array_key_last($imageName)];
-            File::copy($image, public_path('banner_images/' . $key . '/' . $imageName));
-
-            $listBanner[] = [
-                'image' => 'banner_images/' . $key . '/' . $imageName,
-                'status' => 1
-            ];
-        }
-
-        DB::table('banners')
-            ->insert($listBanner);
 
         $listCategory = [
             [

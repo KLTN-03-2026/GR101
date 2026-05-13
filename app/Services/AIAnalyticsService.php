@@ -22,6 +22,7 @@ class AIAnalyticsService
             $suggestions = $this->parseAISuggestions($response);
             return $suggestions;
         } catch (\Exception $e) {
+            \Log::error("AI Generate Suggestions Error: " . $e->getMessage());
             return [];
         }
     }
@@ -53,7 +54,8 @@ PHÂN LOẠI GỢI Ý:
 - Đề cập cụ thể ngày/giờ trong description hoặc action nếu có dữ liệu
 
 FORMAT JSON (CHỈ TRẢ VỀ JSON HỢP LỆ, KHÔNG THÊM TEXT KHÁC):
-[
+{
+  \"suggestions\": [
   {
     \"type\": \"pricing\",
     \"product_id\": 11,
@@ -63,7 +65,8 @@ FORMAT JSON (CHỈ TRẢ VỀ JSON HỢP LỆ, KHÔNG THÊM TEXT KHÁC):
     \"priority\": 3,
     \"reasoning\": \"Lý do quan trọng\"
   }
-]
+  ]
+}
 
 LƯU Ý QUAN TRỌNG: 
 - KHÔNG để trailing comma sau phần tử cuối
@@ -102,6 +105,10 @@ LƯU Ý: Chỉ trả về JSON array, không thêm markdown, không thêm text g
                 return [];
             }
 
+            if (isset($suggestions['suggestions']) && is_array($suggestions['suggestions'])) {
+                $suggestions = $suggestions['suggestions'];
+            }
+
             $validSuggestions = [];
             foreach ($suggestions as $suggestion) {
                 if ($this->validateSuggestion($suggestion)) {
@@ -137,28 +144,115 @@ LƯU Ý: Chỉ trả về JSON array, không thêm markdown, không thêm text g
         return true;
     }
 
-    public function getBusinessInsights()
+    public function getBusinessAnalysisReport()
     {
         try {
-            $data = $this->dataCollector->collectForAI();
+            $dataPrompt = $this->dataCollector->formatForPrompt();
 
-            $prompt = "Bạn là chuyên gia tư vấn kinh doanh. Dựa trên dữ liệu sau:
+            $prompt = "Bạn là một chuyên gia phân tích dữ liệu kinh doanh và chiến lược gia thương mại điện tử.
+Dựa trên dữ liệu thực tế của cửa hàng nông sản sau đây:
 
-Tổng sản phẩm: {$data['overall_stats']['total_products']}
-Lượt xem (7d): {$data['overall_stats']['total_views_7d']}
-Thêm giỏ (7d): {$data['overall_stats']['total_cart_adds_7d']}
-Mua hàng (7d): {$data['overall_stats']['total_purchases_7d']}
+{$dataPrompt}
 
-Hãy đưa ra:
-1. Đánh giá tổng quan tình hình kinh doanh (3-4 câu)
-2. 3 xu hướng đáng chú ý
-3. 3 khuyến nghị chiến lược quan trọng nhất
+Nhiệm vụ: Phân tích sâu dữ liệu trên và trả về một báo cáo chiến lược NGẮN GỌN dưới định dạng JSON.
+Yêu cầu cấu trúc JSON:
+{
+  \"nhan_dinh\": \"Đánh giá tổng quan về doanh thu và hoạt động tuần qua (2-3 câu)\",
+  \"canh_bao\": \"Các rủi ro về tồn kho, tỉ lệ bỏ giỏ hoặc sản phẩm đang đi xuống (2-3 câu)\",
+  \"de_xuat\": \"Chiến lược cụ thể để tăng doanh thu ngay lập tức (ví dụ: tạo coupon, flash sale)\",
+  \"action_params\": {
+      \"coupon_code\": \"AI_PROMO_XXXX\",
+      \"discount_value\": 10,
+      \"type\": \"percent\"
+  }
+}
 
-Trả lời bằng tiếng Việt, chuyên nghiệp và súc tích.";
+Lưu ý quan trọng:
+- Trả về JSON tiếng Việt.
+- CHỈ trả về JSON, KHÔNG thêm text hay markdown code block.
+- KHÔNG sử dụng ký tự xuống dòng hoặc tab bên trong các giá trị string.
+- action_params phải gợi ý mã coupon thực tế dựa trên tình hình.
+- TRẢ VỀ JSON TRÊN MỘT DÒNG DUY NHẤT, KHÔNG CÓ KÝ TỰ XUỐNG DÒNG.";
 
-            return $this->openai->generateContent($prompt);
+            $response = $this->openai->generateContent($prompt, false);
+
+            if (!$response) {
+                return null;
+            }
+
+            // --- Robust JSON Cleaning ---
+            $rawLength = strlen($response);
+            
+            // 1. Remove markdown code fences (any case)
+            $response = preg_replace('/^```(?:json)?\s*/i', '', $response);
+            $response = preg_replace('/\s*```$/', '', $response);
+
+            // 2. Replace all control characters (0-31) and 127 with space
+            $response = preg_replace('/[\x00-\x1F\x7F]/', ' ', $response);
+
+            $response = trim($response);
+            $cleanLength = strlen($response);
+
+            // Try to parse
+            $parsed = json_decode($response, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                \Log::error('Business Analysis JSON parse failed: ' . json_last_error_msg());
+                return null;
+            }
+
+            if (!$this->validateBusinessReport($parsed)) {
+                \Log::warning('Business Analysis returned invalid shape: ' . json_encode(array_keys((array) $parsed)));
+                return $this->buildFallbackBusinessReport();
+            }
+
+            return $parsed;
         } catch (\Exception $e) {
+            \Log::error("Business Analysis Error: " . $e->getMessage());
             return null;
         }
+    }
+
+    protected function validateBusinessReport($report): bool
+    {
+        if (!is_array($report)) {
+            return false;
+        }
+
+        foreach (['nhan_dinh', 'canh_bao', 'de_xuat', 'action_params'] as $key) {
+            if (!array_key_exists($key, $report)) {
+                return false;
+            }
+        }
+
+        return is_array($report['action_params']);
+    }
+
+    protected function buildFallbackBusinessReport(): array
+    {
+        $data = $this->dataCollector->collectForAI();
+        $stats = $data['overall_stats'];
+        $topProduct = $data['products'][0] ?? null;
+
+        $nhanDinh = "Trong 7 ngày gần nhất, hệ thống ghi nhận {$stats['total_views_7d']} lượt xem, {$stats['total_cart_adds_7d']} lượt thêm giỏ và {$stats['total_purchases_7d']} lượt mua. Dữ liệu hiện tại đủ để đưa ra gợi ý vận hành cơ bản, nhưng nên tiếp tục tăng tracking để AI phân tích chính xác hơn.";
+
+        $canhBao = "Tỷ lệ mua hàng còn phụ thuộc mạnh vào số lượt thêm giỏ và lượng tồn kho. Cần theo dõi các sản phẩm có nhiều lượt xem nhưng ít mua để tránh tồn kho chậm quay vòng.";
+
+        $deXuat = "Tạo mã giảm giá ngắn hạn 10% cho nhóm sản phẩm đang có tương tác, kết hợp đẩy banner trong khung giờ cao điểm để tăng chuyển đổi.";
+        if ($topProduct) {
+            $deXuat = "Ưu tiên chạy mã giảm giá 10% hoặc combo cho {$topProduct['name']} vì đây là sản phẩm nổi bật trong dữ liệu hoạt động gần đây.";
+        }
+
+        return [
+            'source' => 'local_fallback',
+            'nhan_dinh' => $nhanDinh,
+            'canh_bao' => $canhBao,
+            'de_xuat' => $deXuat,
+            'action_params' => [
+                'coupon_code' => 'AI_PROMO_' . now()->format('md'),
+                'discount_value' => 10,
+                'type' => 'percent',
+            ],
+        ];
     }
 }

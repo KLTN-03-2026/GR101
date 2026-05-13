@@ -24,23 +24,28 @@ class ProfileController extends Controller
 
     public function profile(ProfileRequest $request, $id) {
         try {
-            $profileUser = User::find($id);
-            $data = $request->all();
+            $user = User::find($id);
+            
+            // 1. Cập nhật thông tin cơ bản
+            $user->name = $request->name;
+            $user->phone = $request->phone;
+            $user->address = $request->address;
 
-            if (!empty($data['password'])){
-                $data['password'] = Hash::make($request->get('password'));
-            } else {
-                unset($data['password']);
+            // 2. Xử lý đổi mật khẩu (nếu có nhập)
+            if ($request->filled('password')) {
+                // Kiểm tra mật khẩu cũ
+                if (!Hash::check($request->old_password, $user->password)) {
+                    return redirect()->back()->with('error', 'Mật khẩu cũ không chính xác.');
+                }
+                $user->password = Hash::make($request->password);
             }
 
-            $profileUser->fill($data);
+            $user->save();
 
-            $profileUser->save();
-
-            return redirect()->route('web.profile')->with('success', 'Cập nhật thành công');
+            return redirect()->route('web.profile')->with('success', 'Cập nhật thông tin cá nhân thành công');
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            return redirect()->back()->with('error', $exception->getMessage());
+            return redirect()->back()->with('error', 'Có lỗi xảy ra, vui lòng thử lại sau.');
         }
     }
 }

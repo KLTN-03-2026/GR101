@@ -228,4 +228,86 @@ class AnalyticsService
             'is_overpriced' => $priceDifference > 15 && $conversionRate < 5,
         ];
     }
+    /**
+     * Get revenue for the last 7 days vs previous 7 days
+     */
+    public function getWeeklyRevenueTrend()
+    {
+        $now = Carbon::now();
+        $thisWeekStart = $now->copy()->subDays(7);
+        $lastWeekStart = $now->copy()->subDays(14);
+
+        $thisWeekRevenue = DB::table('orders')
+            ->where('status', 'SUCCESS')
+            ->where('created_at', '>=', $thisWeekStart)
+            ->sum(DB::raw('total_money'));
+
+        $lastWeekRevenue = DB::table('orders')
+            ->where('status', 'SUCCESS')
+            ->whereBetween('created_at', [$lastWeekStart, $thisWeekStart])
+            ->sum(DB::raw('total_money'));
+
+        $growth = $lastWeekRevenue > 0 
+            ? (($thisWeekRevenue - $lastWeekRevenue) / $lastWeekRevenue) * 100 
+            : ($thisWeekRevenue > 0 ? 100 : 0);
+
+        return [
+            'this_week' => $thisWeekRevenue,
+            'last_week' => $lastWeekRevenue,
+            'growth_percent' => round($growth, 2)
+        ];
+    }
+
+    /**
+     * Get Top selling products (Top 5)
+     */
+    public function getTopSellingProducts($limit = 5, $days = 7)
+    {
+        $startDate = Carbon::now()->subDays($days);
+
+        return DB::table('order_products')
+            ->join('products', 'order_products.product_id', '=', 'products.id')
+            ->select('products.name', DB::raw('SUM(order_products.quantity) as total_sold'))
+            ->where('order_products.created_at', '>=', $startDate)
+            ->groupBy('products.id', 'products.name')
+            ->orderByDesc('total_sold')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Get products with lowest sales but high inventory (Slow moving - Top 3)
+     */
+    public function getCriticalSlowProducts($limit = 3)
+    {
+        $slowProducts = $this->getSlowMovingProducts(30);
+        
+        // Sort by inventory quantity descending (most critical)
+        usort($slowProducts, function($a, $b) {
+            return $b['quantity'] <=> $a['quantity'];
+        });
+
+        return array_slice($slowProducts, 0, $limit);
+    }
+
+    /**
+     * Get cancellation rate
+     */
+    public function getCancellationRate($days = 7)
+    {
+        $startDate = Carbon::now()->subDays($days);
+
+        $totalOrders = DB::table('orders')
+            ->where('created_at', '>=', $startDate)
+            ->count();
+
+        $cancelledOrders = DB::table('orders')
+            ->where('status', 'CANCEL')
+            ->where('created_at', '>=', $startDate)
+            ->count();
+
+        if ($totalOrders == 0) return 0;
+
+        return round(($cancelledOrders / $totalOrders) * 100, 2);
+    }
 }

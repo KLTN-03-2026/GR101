@@ -50,7 +50,7 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('render-attribute-product-child', [\App\Http\Controllers\Admin\ProductController::class, 'renderAttributeListProductChild'])
         ->name('renderAttributeProductChild');
 
-    Route::resource('banners', \App\Http\Controllers\Admin\BannerController::class);
+    // Banner routes removed
 
     Route::resource('orders', \App\Http\Controllers\Admin\OrderController::class);
 
@@ -58,12 +58,16 @@ Route::middleware(['auth:admin'])->group(function () {
 
     Route::resource('coupons', \App\Http\Controllers\Admin\CouponController::class);
 
+    Route::resource('reviews', \App\Http\Controllers\Admin\ReviewController::class);
+
     Route::resource('cities', \App\Http\Controllers\Admin\ShippingFeeController::class);
+    Route::resource('contacts', \App\Http\Controllers\Admin\ContactController::class);
 
     // AI Dashboard Routes
     Route::get('ai-dashboard', [\App\Http\Controllers\Admin\AIDashboardController::class, 'index'])->name('ai.dashboard');
     Route::post('ai-dashboard/dismiss', [\App\Http\Controllers\Admin\AIDashboardController::class, 'dismissSuggestion'])->name('ai.dismiss');
-    Route::get('ai-dashboard/analytics', [\App\Http\Controllers\Admin\AIDashboardController::class, 'getAnalyticsData'])->name('ai.analytics');
+    Route::get('ai-dashboard/analytics', [\App\Http\Controllers\Admin\AIDashboardController::class, 'getBusinessAnalysis'])->name('ai.analytics');
+    Route::get('ai-dashboard/suggestions', [\App\Http\Controllers\Admin\AIDashboardController::class, 'getSuggestions'])->name('ai.suggestions');
 
 });
 

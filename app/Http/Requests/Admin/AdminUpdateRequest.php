@@ -26,6 +26,15 @@ class AdminUpdateRequest extends FormRequest
         return [
             'name' => 'required',
             'email' => 'required|email|unique:admins,email,' . request()->id,
+            'password' => 'nullable|min:6|regex:/^\S*$/'
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'password.regex' => 'Mật khẩu không được chứa khoảng trắng.',
+            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
         ];
     }
 }

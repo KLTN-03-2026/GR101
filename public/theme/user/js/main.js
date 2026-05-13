@@ -70,7 +70,7 @@ Note: main.js, All Default Scripting Languages For This Theme Included In This F
 /*  04. Nice Select
 /*----------------------------------------*/
 	$(document).ready(function() {
-		$('.nice-select').niceSelect();
+		$('select:not(#city_id):not(.ignore-nice-select)').niceSelect();
 	});
 /*----------------------------------------*/
 /* 05. Main Slider Activision

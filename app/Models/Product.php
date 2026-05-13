@@ -21,6 +21,7 @@ class Product extends Model
         'price',
         'price_new',
         'quantity',
+        'unit',
         'image',
         'status',
         'category_id',
@@ -77,6 +78,11 @@ class Product extends Model
     }
 
     public function getImage(): string {
+        // Hỗ trợ link ảnh ngoài (http hoặc https)
+        if (!empty($this->image) && filter_var($this->image, FILTER_VALIDATE_URL)) {
+            return $this->image;
+        }
+
         if (!empty($this->image) && is_file(public_path($this->image))) {
             return asset($this->image);
         }
@@ -123,5 +129,9 @@ class Product extends Model
             ->sum('quantity');
 
         return $this->quantity - $quantityInOrder;
+    }
+
+    public function reviews(): \Illuminate\Database\Eloquent\Relations\HasMany {
+        return $this->hasMany(Review::class, 'product_id')->where('status', 1)->orderBy('created_at', 'desc');
     }
 }

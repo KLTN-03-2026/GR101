@@ -1,6 +1,6 @@
 <div class="form-group pt-3">
     <label for="name">Tên mã khuyến mãi @include('admin.include.required_icon')</label>
-    <input type="text" name="name" class="form-control" value="{{ $coupon->name ?? '' }}">
+    <input type="text" name="name" class="form-control" value="{{ old('name', $coupon->name ?? request('coupon_code') ?? '') }}">
     @error('name')
         <p class="alert alert-danger">{{ $message }}</p>
     @enderror
@@ -10,15 +10,20 @@
 <div class="form-group pt-3">
     <label for="name">Loại khuyến mãi @include('admin.include.required_icon')</label>
 
-    <select name="type" class="form-control form-select" @if(!empty($coupon)) disabled @endif>
-        @foreach(getListCouponType() as $key => $value)
-            @if(!empty($coupon) && $coupon->type == $key)
-                <option selected value="{{ $key }}">{{ $value }}</option>
-            @else
-                <option value="{{ $key }}">{{ $value }}</option>
-            @endif
-        @endforeach
-    </select>
+    @if(!empty($coupon))
+        {{-- Khi sửa: hiển thị text, không cho thay đổi, dùng input hidden để gửi giá trị --}}
+        <input type="text" class="form-control bg-light text-muted"
+               value="{{ getListCouponType()[$coupon->type] ?? $coupon->type }}" readonly>
+        <input type="hidden" name="type" value="{{ $coupon->type }}">
+        <small class="text-muted"><i class="fa fa-info-circle"></i> Không thể thay đổi loại khuyến mãi sau khi đã tạo.</small>
+    @else
+        {{-- Khi tạo mới: cho phép chọn --}}
+        <select name="type" class="form-control form-select">
+            @foreach(getListCouponType() as $key => $value)
+                <option value="{{ $key }}" @if(request('type') == $key) selected @endif>{{ $value }}</option>
+            @endforeach
+        </select>
+    @endif
 
     @error('type')
         <p class="alert alert-danger">{{ $message }}</p>
@@ -27,7 +32,7 @@
 
 <div class="form-group pt-3">
     <label for="name">Số tiền/phần trăm khuyến mãi @include('admin.include.required_icon')</label>
-    <input type="text" name="discount" class="form-control" value="{{ $coupon->discount ?? '' }}">
+    <input type="text" name="discount" class="form-control" value="{{ old('discount', $coupon->discount ?? request('discount_value') ?? '') }}">
     @error('discount')
         <p class="alert alert-danger">{{ $message }}</p>
     @enderror

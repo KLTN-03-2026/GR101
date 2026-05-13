@@ -27,7 +27,7 @@
             <th>Số tiền/phần trăm khuyến mãi</th>
             <th>Loại khuyến mãi</th>
             <th>Số tiền giảm tối đa</th>
-            <th>Số lần sử dụng</th>
+            <th>Đã dùng / Tổng</th>
             <th>Ngày bắt đầu</th>
             <th>Ngày kết thúc</th>
             <th>Hành động</th>
@@ -39,7 +39,16 @@
                 <td>{{ formatVnd($coupon->discount) }}</td>
                 <td>{{ getListCouponType()[$coupon->type] ?? '' }}</td>
                 <td>{{ formatVnd($coupon->discount_max) }}</td>
-                <td>{{ $coupon->number_use }}</td>
+                <td>
+                    @php
+                        $used = \DB::table('orders')->where('coupon_id', $coupon->id)->count();
+                        $remaining = $coupon->number_use - $used;
+                    @endphp
+                    <span class="badge {{ $remaining <= 0 ? 'bg-danger' : ($remaining <= 3 ? 'bg-warning text-dark' : 'bg-success') }}">
+                        {{ $used }} / {{ $coupon->number_use }}
+                    </span>
+                    <small class="text-muted d-block">(Còn lại: {{ max(0, $remaining) }})</small>
+                </td>
                 <td>{{ $coupon->start }}</td>
                 <td>{{ $coupon->end }}</td>
                 <td>

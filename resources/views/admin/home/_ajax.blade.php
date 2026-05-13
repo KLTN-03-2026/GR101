@@ -83,6 +83,54 @@
 <div class="col-lg-12">
     <div class="card">
         <div class="card-body">
+            <h5 class="card-title">Thống kê doanh thu 7 ngày gần nhất</h5>
+
+            <!-- Line Chart -->
+            <div id="dailyChart"
+                 style="min-height: 400px;"
+                 class="echart"></div>
+
+            <script>
+                $(document).ready(function () {
+                    let dailyData = @json($dailyRevenueData);
+                    let keys = Object.keys(dailyData);
+                    let values = Object.values(dailyData);
+
+                    echarts.init(document.querySelector("#dailyChart")).setOption({
+                        tooltip: {
+                            trigger: 'axis'
+                        },
+                        xAxis: {
+                            type: 'category',
+                            data: keys,
+                            name: 'Ngày',
+                        },
+                        yAxis: {
+                            type: 'value',
+                            name: 'Doanh thu (VND)',
+                        },
+                        series: [{
+                            data: values,
+                            type: 'line',
+                            smooth: true,
+                            areaStyle: {},
+                            label: {
+                                show: true,
+                                formatter: function (params) {
+                                    return new Intl.NumberFormat('vi-VN').format(params.value);
+                                },
+                            }
+                        }],
+                    });
+                });
+            </script>
+        </div>
+    </div>
+</div>
+
+<div class="col-lg-12">
+    <div class="card">
+        <div class="card-body">
             <h5 class="card-title">Thống kê số đơn đặt hàng theo tháng</h5>
 
             <!-- Bar Chart -->
@@ -213,6 +261,66 @@
                 });
             </script>
             <!-- End Bar Chart -->
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Top Selling Products -->
+    <div class="col-lg-6">
+        <div class="card top-selling overflow-auto">
+            <div class="card-body pb-0">
+                <h5 class="card-title">Sản phẩm bán chạy nhất</h5>
+                <table class="table table-borderless">
+                    <thead>
+                        <tr>
+                            <th scope="col">Hình ảnh</th>
+                            <th scope="col">Sản phẩm</th>
+                            <th scope="col">Đã bán</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($topSellingProducts as $product)
+                        <tr>
+                            <th scope="row">
+                                <a href="#"><img src="{{ asset($product->image) }}" alt="" style="width: 50px;"></a>
+                            </th>
+                            <td><a href="#" class="text-primary fw-bold">{{ $product->name }}</a></td>
+                            <td class="fw-bold">{{ $product->total_sold }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Customers -->
+    <div class="col-lg-6">
+        <div class="card top-selling overflow-auto">
+            <div class="card-body pb-0">
+                <h5 class="card-title">Khách hàng mua nhiều nhất</h5>
+                <table class="table table-borderless">
+                    <thead>
+                        <tr>
+                            <th scope="col">Khách hàng</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Số đơn</th>
+                            <th scope="col">Tổng chi tiêu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($topCustomers as $customer)
+                        <tr>
+                            <td>{{ $customer['name'] }}</td>
+                            <td>{{ $customer['email'] }}</td>
+                            <td>{{ $customer['order_count'] }}</td>
+                            <td class="fw-bold">{{ formatVnd($customer['total_spent']) }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

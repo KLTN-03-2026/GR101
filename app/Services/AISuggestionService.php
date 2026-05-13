@@ -83,8 +83,8 @@ class AISuggestionService
         }
     }
 
-    public function getBusinessInsights()
+    public function getBusinessAnalysisReport()
     {
-        return $this->aiAnalytics->getBusinessInsights();
+        return $this->aiAnalytics->getBusinessAnalysisReport();
     }
 }

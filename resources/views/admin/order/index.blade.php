@@ -6,7 +6,7 @@
             <select class="form-control form-select" style="width: fit-content" name="payment_type_search">
                 <option value="">--Phương thức thanh toán--</option>
                 <option value="COD" @if(request()->get('payment_type_search') == 'COD') selected @endif>COD</option>
-                <option value="MOMO" @if(request()->get('payment_type_search') == 'MOMO') selected @endif>MOMO</option>
+                <option value="VNPAY" @if(request()->get('payment_type_search') == 'VNPAY') selected @endif>VNPAY</option>
             </select>
             <select class="form-control form-select" style="width: fit-content" name="order_status_search">
                 <option value="">--Trạng thái đơn hàng--</option>

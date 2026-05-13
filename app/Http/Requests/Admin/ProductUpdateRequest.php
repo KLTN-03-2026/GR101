@@ -28,9 +28,10 @@ class ProductUpdateRequest extends FormRequest
         $type = $this->request->get('type');
         $rules = [
             'name' => 'required|unique:products,name,' . $this->request->get('id'),
-            'quantity' => ['required', 'numeric', 'min:1', new IsValidQuantityProduct($this->request->get('id'))],
+            'quantity' => ['required', 'numeric', 'min:0', new IsValidQuantityProduct($this->request->get('id'))],
             'price' => 'required|numeric|min:0',
             'category_id' => 'required',
+            'status' => 'required|in:0,1',
         ];
 
         if ($type == 'configurable') {

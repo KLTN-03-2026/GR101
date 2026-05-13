@@ -26,8 +26,25 @@ class RegisterRequest extends FormRequest
         return [
             'name' => 'required',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6',
-            'password_confirm' => 'required|min:6|same:password'
+            'phone' => 'required|digits:10|unique:users,phone',
+            'password' => 'required|min:6|confirmed|regex:/^\S*$/',
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'name.required' => 'Vui lòng nhập họ tên.',
+            'email.required' => 'Vui lòng nhập email.',
+            'email.email' => 'Email không hợp lệ.',
+            'email.unique' => 'Email này đã tồn tại trên hệ thống.',
+            'phone.required' => 'Vui lòng nhập số điện thoại.',
+            'phone.digits' => 'Số điện thoại phải đủ 10 chữ số.',
+            'phone.unique' => 'Số điện thoại này đã tồn tại trên hệ thống.',
+            'password.required' => 'Vui lòng nhập mật khẩu.',
+            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
+            'password.confirmed' => 'Mật khẩu xác nhận không khớp.',
+            'password.regex' => 'Mật khẩu không được chứa khoảng trắng.',
         ];
     }
 }

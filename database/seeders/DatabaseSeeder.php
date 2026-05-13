@@ -16,9 +16,10 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             AdminSeeder::class,
-//            ProductSeeder::class,
-//            AttributeSeeder::class,
-//            ValueSeeder::class
+            VietnameseIngredientsSeeder::class,
+    //            ProductSeeder::class,
+    //            AttributeSeeder::class,
+    //            ValueSeeder::class
         ]);
     }
 }

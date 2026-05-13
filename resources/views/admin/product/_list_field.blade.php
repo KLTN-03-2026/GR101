@@ -65,6 +65,12 @@
                 <p class="alert alert-danger tag-error" id="quantity-error"></p>
             </div>
 
+            <div class="form-group pt-3">
+                <label for="unit">Đơn vị tính (ví dụ: kg, gram, hũ, lốc...)</label>
+                <input type="text" name="unit" class="form-control" value="{{ $product->unit ?? '' }}" placeholder="Ví dụ: kg, gram, hũ, lốc...">
+                <p class="alert alert-danger tag-error" id="unit-error"></p>
+            </div>
+
             @if(!empty($product))
             <div class="form-group pt-3">
                 <p>Số lượng còn lại: {{ $product->getQuantityActive() }}</p>
@@ -85,9 +91,9 @@
 
         <div class="form-group pt-3">
             <label for="status">Trạng thái: @include('admin.include.required_icon')</label>
-            <select class="form-group p-lg-2" name="status">
-                <option value="1" @if(!empty($product) && $product->status == 1) selected @endif>On</option>
-                <option value="0" @if(!empty($product) && $product->status == 0) selected @endif>Off</option>
+            <select class="form-control form-select" name="status">
+                <option value="1" @if(isset($product) && $product->status == 1) selected @endif>Đang bán (On)</option>
+                <option value="0" @if(isset($product) && $product->status == 0) selected @endif>Ngừng bán / Ẩn (Off)</option>
             </select>
             <p class="alert alert-danger tag-error" id="status-error"></p>
         </div>

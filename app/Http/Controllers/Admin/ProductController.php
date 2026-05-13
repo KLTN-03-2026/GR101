@@ -33,7 +33,7 @@ class ProductController extends Controller {
                     $query->orWhere('description', 'like', "%" . $request->get('search') . "%");
                 }
             })
-            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'asc')
             ->paginate(10);
         return view('admin.product.index', compact('listProduct'));
     }
@@ -545,18 +545,36 @@ class ProductController extends Controller {
      */
     public function destroy(int $id): RedirectResponse {
         try {
-            $admin = Product::find($id);
-            $admin->delete();
-
-            return redirect()->back()->with('success', 'Xóa thành công');
-        } catch (\Exception $exception) {
-            Log::error($exception->getMessage());
-
-            if ($exception->getCode() == 23000) {
-                return redirect()->back()->with('error', "Không thể xóa #$id vì đã có đơn đặt hàng");
+            $product = Product::find($id);
+            if (!$product) {
+                return redirect()->back()->with('error', 'Sản phẩm không tồn tại');
             }
 
-            return redirect()->back()->with('error', $exception->getMessage());
+            // Kiểm tra xem sản phẩm hoặc các biến thể của nó đã có trong đơn hàng chưa
+            $hasOrders = DB::table('order_products')
+                ->where('product_id', $id)
+                ->orWhereIn('product_id', function($query) use ($id) {
+                    $query->select('id')->from('products')->where('parent_id', $id);
+                })
+                ->exists();
+
+            if ($hasOrders) {
+                // Nếu đã có đơn hàng, chỉ ẩn đi (chuyển status về 0) để không làm hỏng dữ liệu đơn hàng cũ
+                $product->update(['status' => 0]);
+                
+                // Cũng ẩn luôn các biến thể nếu có
+                DB::table('products')->where('parent_id', $id)->update(['status' => 0]);
+
+                return redirect()->back()->with('success', 'Sản phẩm đã có lịch sử đơn hàng nên hệ thống đã tự động chuyển sang trạng thái "Ngừng bán" thay vì xóa cứng.');
+            }
+
+            // Nếu chưa có đơn hàng, tiến hành xóa cứng
+            $product->delete();
+
+            return redirect()->back()->with('success', 'Xóa sản phẩm thành công');
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $exception->getMessage());
         }
     }
     public function renderProductChildNewRow(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application {

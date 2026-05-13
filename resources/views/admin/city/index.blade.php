@@ -19,6 +19,7 @@
             </ol>
         </nav>
     </div><!-- End Page Title -->
+    <a href="{{ route('admin.cities.create') }}" class="btn btn-primary mb-2">Thêm tỉnh/thành phố</a>
     <table class="table table-bordered border border-primary" style="text-align: center">
         <tr>
             <th>ID</th>

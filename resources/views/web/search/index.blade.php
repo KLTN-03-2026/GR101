@@ -7,100 +7,36 @@
             height: 100%;
         }
     </style>
-    <div class="slider-with-banner">
+    <section class="product-area pt-60 pb-45 font-sans">
         <div class="container">
             <div class="row">
-                <!-- Begin Category Menu Area -->
-                <div class="col-lg-3">
-                    <!--Category Menu Start-->
-                    <div class="category-menu">
-                        <div class="category-heading">
-                            <h2 class="categories-toggle"><span>categories</span></h2>
-                        </div>
-                        <div id="cate-toggle" class="category-menu-list" style="display: block;">
-                            <ul>
-                                @foreach($listCategory as $categoryItem)
-                                    <li><a href="{{ route('web.detail.category', $categoryItem->id) }}">{{ $categoryItem->name }}</a></li>
-                                @endforeach
+                <!-- Sidebar -->
+            <div class="col-lg-3">
+                @include('web.include.attr_search', ['listProductId' => $listProductId])
+            </div>
 
-                                <li class="rx-parent">
-                                    <a class="rx-default">More Categories</a>
-                                    <a class="rx-show">Less Categories</a>
-                                </li>
-                            </ul>
+                <!-- Main Content -->
+                <div class="col-lg-9 relative">
+                    <div class="mb-10 flex items-center justify-between px-4">
+                        <div class="space-y-1">
+                            <h2 class="text-2xl font-black text-gray-900 tracking-tight">Kết quả tìm kiếm</h2>
+                            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Tìm thấy <span id="total-products">{{ $listProduct->total() }}</span> sản phẩm cho "{{ $search }}"</p>
                         </div>
+                        <div class="h-px flex-1 bg-gray-100 mx-10 hidden md:block"></div>
                     </div>
-                    <!--Category Menu End-->
-                </div>
-                <!-- Category Menu Area End Here -->
-                <!-- Begin Slider Area -->
-                <div class="col-lg-9">
-                    <div class="slider-area pt-sm-30 pt-xs-30">
-                        <div id="demo" class="carousel slide" data-ride="carousel">
 
-                            <!-- Indicators -->
-                            <ul class="carousel-indicators">
-                                @foreach($listBanner as $key => $banner)
-                                    @if($key == 0)
-                                        <li data-target="#demo" data-slide-to="{{ $key }}" class="active"></li>
-                                    @else
-                                        <li data-target="#demo" data-slide-to="{{ $key }}"></li>
-                                    @endif
-                                @endforeach
-
-                            </ul>
-
-                            <!-- The slideshow -->
-                            <div class="carousel-inner">
-                                @foreach($listBanner as $key => $banner)
-                                    @if($key == 0)
-                                        <div class="carousel-item active">
-                                            <img src="{{ $banner->getImage() }}" alt="" width="1100" height="500">
-                                        </div>
-                                    @else
-                                        <div class="carousel-item">
-                                            <img src="{{ $banner->getImage() }}" alt="" width="1100" height="500">
-                                        </div>
-                                    @endif
-                                @endforeach
-                            </div>
-
-                            <!-- Left and right controls -->
-                            <a class="carousel-control-prev" href="#demo" data-slide="prev">
-                                <span class="carousel-control-prev-icon"></span>
-                            </a>
-                            <a class="carousel-control-next" href="#demo" data-slide="next">
-                                <span class="carousel-control-next-icon"></span>
-                            </a>
+                    <!-- AJAX Loading Overlay -->
+                    <div id="filter-loader" class="absolute inset-0 bg-white/50 backdrop-blur-[2px] z-50 flex items-center justify-center hidden">
+                        <div class="flex flex-col items-center gap-4">
+                            <div class="w-12 h-12 border-4 border-green-900/10 border-t-green-900 rounded-full animate-spin"></div>
+                            <p class="text-[10px] font-black text-green-900 uppercase tracking-[0.2em]">Đang lọc...</p>
                         </div>
                     </div>
-                </div>
-                <!-- Slider Area End Here -->
-            </div>
-        </div>
-    </div>
 
-
-    <section class="product-area li-laptop-product Special-product pt-60 pb-45">
-        <h5 class="text-center">Tìm thấy {{ $listProduct->count() }} sản phẩm cho từ khóa '{{ $search }}'</h5>
-        <div class="container">
-            <div class="row">
-                <div class="col-3">
-                    @include('web.include.attr_search', ['listProductId' => $listProductId])
-                </div>
-                <div class="col-9">
-                    <div class="row">
-                        @foreach($listProduct as $product)
-                            @include('web.include.item_product_search')
-                        @endforeach
+                    <div id="ajax-product-container">
+                        @include('web.include.product_list_partial')
                     </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-12">
-                    {{ $listProduct->appends(request()->input())->links() }}
-                </div>
-            </div>
         </div>
     </section>
 @endsection

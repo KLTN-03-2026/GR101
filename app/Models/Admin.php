@@ -18,7 +18,13 @@ class Admin extends Authenticatable
         'email',
         'password',
         'image',
+        'role',
     ];
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 1;
+    }
 
     public function getImage(): string {
         if (!empty($this->image) && is_file(public_path($this->image))) {

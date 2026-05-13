@@ -108,7 +108,7 @@ class DataCollectorService
             return $activityB - $activityA;
         });
 
-        return array_slice($result, 0, 10);
+        return array_slice($result, 0, 5);
     }
 
     protected function getRecentTrends()

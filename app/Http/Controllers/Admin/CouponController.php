@@ -35,7 +35,7 @@ class CouponController extends Controller
      *
      * @return View
      */
-    public function create(): View
+    public function create(Request $request): View
     {
         return view('admin.coupon.create');
     }

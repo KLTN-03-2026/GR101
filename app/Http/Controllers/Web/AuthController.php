@@ -19,23 +19,31 @@ class AuthController extends Controller
     public function login(UserLoginRequest $request) {
         $email = $request->get('email');
         $password = $request->get('password');
+        
+        // Thêm kiểm tra tài khoản bị khóa
+        $user = User::where('email', $email)->first();
+        if ($user && $user->status == 0) {
+            return redirect()->back()->with('error', 'Tài khoản của bạn đã bị khóa, vui lòng liên hệ Admin.');
+        }
+
         $data = [
             'email' => $email,
-            'password' => $password
+            'password' => $password,
+            'status' => 1 // Chỉ cho phép tài khoản đang hoạt động
         ];
 
         $isLogin = Auth::guard('web')->attempt($data, $request->get('remember'));
 
         if ($isLogin) {
-            return redirect()->route('web.index');
+            return redirect()->route('web.index')->with('success', 'Chào mừng bạn quay trở lại!');
         }
 
-        return redirect()->back()->with('error', 'Email hoặc mật khẩu không đúng!');
+        return redirect()->back()->with('error', 'Tài khoản hoặc mật khẩu không chính xác!');
     }
 
     public function logout() {
         Auth::guard('web')->logout();
-        return redirect()->route('web.login');
+        return redirect()->route('web.login')->with('success', 'Đăng xuất thành công. Hẹn gặp lại bạn!');
     }
 
     public function showFormRegister() {
@@ -45,7 +53,7 @@ class AuthController extends Controller
     public function register(RegisterRequest $request) {
         try {
             $user = new User();
-            $data = $request->only(['name', 'email', 'password']);
+            $data = $request->only(['name', 'email', 'phone', 'password']);
             $data['password'] = Hash::make($data['password']);
             $user->fill($data);
 

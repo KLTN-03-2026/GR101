@@ -29,71 +29,80 @@ class OrderController extends Controller
         $dataOrder = $request->except(['list_product', '_token']);
         $listProductRequest = $request->get('list_product');
         $listProduct = Product::whereIn('id', array_column($listProductRequest, 'id'))->get();
-        $dataOrder['user_id'] = $user->id;
-        $dataOrder['created_at'] = Carbon::now();
-        $dataOrder['id'] = time() * rand(1111111, 99999999);
 
-        $city = City::find($request->city_id);
-        $dataOrder['shipping_fee'] = $city->shipping_fee;
-        $dataOrder['city_id'] = $request->city_id;
-        $orderProductInsert = [];
-        $orderId = DB::table('orders')->insertGetId($dataOrder);
-
+        // 1. Check stock for each product before creating order
         foreach ($listProduct as $product) {
-            if (!empty($listProductRequest[$product->id]['quantity'])) {
-                $orderProductInsert[] = [
-                    'order_id' => $orderId,
-                    'product_id' => $product->id,
-                    'price' => $product->price,
-                    'quantity' => $listProductRequest[$product->id]['quantity']
-                ];
+            $requestedQty = $listProductRequest[$product->id]['quantity'] ?? 0;
+            if ($product->getQuantityActive() < $requestedQty) {
+                return redirect()->back()->with('error', 'Sản phẩm [' . $product->name . '] hiện đã hết hàng hoặc không đủ số lượng.');
             }
         }
 
-        if (!empty($orderProductInsert)) {
-            DB::table('order_products')->insert($orderProductInsert);
+        $dataOrder['user_id'] = $user->id;
+        $dataOrder['created_at'] = Carbon::now();
+        $dataOrder['id'] = time() * rand(11, 99); // Simpler ID or keep your logic
 
-            // Track purchase activity for each product
-            foreach ($orderProductInsert as $item) {
-                \App\Services\ActivityTracker::trackPurchase($item['product_id'], $item['quantity']);
+        $city = City::find($request->city_id);
+        $dataOrder['shipping_fee'] = $city->shipping_fee ?? 0;
+        $dataOrder['city_id'] = $request->city_id;
+        $orderProductInsert = [];
+        
+        // Use Transaction to ensure data integrity
+        $orderId = DB::transaction(function() use ($dataOrder, $listProduct, $listProductRequest, $user) {
+            $orderId = DB::table('orders')->insertGetId($dataOrder);
+
+            foreach ($listProduct as $product) {
+                if (!empty($listProductRequest[$product->id]['quantity'])) {
+                    DB::table('order_products')->insert([
+                        'order_id' => $orderId,
+                        'product_id' => $product->id,
+                        'price' => $product->price,
+                        'quantity' => $listProductRequest[$product->id]['quantity']
+                    ]);
+                    
+                    // Track purchase activity
+                    \App\Services\ActivityTracker::trackPurchase($product->id, $listProductRequest[$product->id]['quantity']);
+                }
             }
 
+            // Clear items from cart
             DB::table('carts')->whereIn('product_id', array_column($listProductRequest, 'id'))
                 ->where('user_id', '=', $user->id)
                 ->delete();
-        }
+
+            return $orderId;
+        });
 
         $order = Order::find($orderId);
 
+        // Handle Coupon logic (Keeping your existing logic)
         if (!empty($request->get('coupon_id'))) {
             $couponId = $request->get('coupon_id');
             $discount = 0;
             $coupon = Coupon::find($couponId);
-
-            if ($coupon->type == 'price') {
-                $discount = $coupon->discount;
-            } else if ($coupon->type == 'percent') {
-                $discount = $coupon->discount * $order->total() / 100;
-            }
-
-            if ($discount > $coupon->discount_max) {
-                $discount = $coupon->discount_max;
-            }
-
-            $order->coupon_id = $couponId;
-            $order->discount = $discount;
-            $order->save();
-        }
-
-        // payment momo
-        if (!empty($dataOrder['payment_type']) && strtoupper($dataOrder['payment_type']) == 'MOMO') {
-            $payUrlMomo = createPayUrlMomo($orderId, $order->total());
-
-            if (!empty($payUrlMomo)) {
-                return redirect()->to($payUrlMomo);
+            if ($coupon) {
+                if ($coupon->type == 'price') {
+                    $discount = $coupon->discount;
+                } else if ($coupon->type == 'percent') {
+                    $discount = $coupon->discount * $order->total() / 100;
+                }
+                if ($discount > $coupon->discount_max) $discount = $coupon->discount_max;
+                $order->coupon_id = $couponId;
+                $order->discount = $discount;
+                $order->save();
             }
         }
 
+        // 2. Handle Payment Redirects
+        if (!empty($dataOrder['payment_type'])) {
+            $pType = strtoupper($dataOrder['payment_type']);
+            if ($pType == 'VNPAY') {
+                // Redirect to VnpayController@create with amount
+                return redirect()->route('web.vnpay.create', ['amount' => $order->total(), 'order_id' => $orderId]);
+            }
+        }
+
+        // 3. Default: COD or Payment initiated
         try {
             Mail::send('emails.create_order', ['order' => $order], function ($mess) use ($order) {
                 $mess->to($order->User->email, 'Thông báo')->subject('[' . env('APP_NAME') . ']Thông báo đặt hàng thành công #' . $order->id);
@@ -103,45 +112,6 @@ class OrderController extends Controller
         }
 
         return redirect()->route('web.order_detail', $orderId)->with('success', 'Đặt hàng thành công');
-    }
-
-    public function momoReturn(Request $request)
-    {
-        $orderId = $request->get('orderId');
-        $orderId = explode('_', $orderId);
-        $orderId = $orderId[0] ?? null;
-        $payType = $request->get('payType');
-
-        if (!empty($orderId)) {
-            if (!empty($payType)) {
-                DB::table('orders')
-                    ->where('id', '=', $orderId)
-                    ->update([
-                        'payment_status' => 'PAID',
-                        'payment_response' => json_encode($request->toArray())
-                    ]);
-
-                $order = Order::find($orderId);
-
-                try {
-                    Mail::send('emails.create_order', ['order' => $order], function ($mess) use ($order) {
-                        $mess->to($order->User->email, 'Thông báo')->subject('[' . env('APP_NAME') . ']Thông báo đặt hàng thành công #' . $order->id);
-                    });
-                } catch (\Exception $e) {
-                    \Log::error('Mail sending failed in momoReturn: ' . $e->getMessage());
-                }
-
-                return redirect()->route('web.order_detail', $orderId)->with('success', 'Thanh toán thành công');
-            }
-        }
-
-        DB::table('orders')
-            ->where('id', '=', $orderId)
-            ->update([
-                'payment_response' => json_encode($request->toArray())
-            ]);
-
-        return redirect()->route('web.order_detail', $orderId)->with('error', $request->get('message') ?? '');
     }
 
     public function success()
@@ -157,13 +127,29 @@ class OrderController extends Controller
     public function checkOut(Request $request)
     {
         $listProductRequest = $request->get('list_product');
-        $listProduct = Product::whereIn('id', array_column($listProductRequest, 'id'))->get();
+        
+        if (empty($listProductRequest) || !is_array($listProductRequest)) {
+            // Fallback: Get all products from cart if no specific selection
+            $user = Auth::guard('web')->user();
+            $cartItems = DB::table('carts')->where('user_id', $user->id)->get();
+            $listProductRequest = [];
+            foreach ($cartItems as $item) {
+                $listProductRequest[$item->product_id] = [
+                    'id' => $item->product_id,
+                    'quantity' => $item->quantity
+                ];
+            }
+        }
+
+        $productIds = array_filter(array_column($listProductRequest, 'id'));
+        $listProduct = Product::whereIn('id', $productIds)->get();
         $listCity = City::all();
 
         $total = 0;
         foreach ($listProduct as $product) {
-            if (!empty($listProductRequest[$product->id]['quantity'])) {
-                $total += $product->price * $listProductRequest[$product->id]['quantity'];
+            $qty = intval($listProductRequest[$product->id]['quantity'] ?? 0);
+            if ($qty > 0) {
+                $total += $product->price * $qty;
             }
         }
 

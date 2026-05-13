@@ -19,17 +19,17 @@
                 <!-- About Text Start -->
                 <div class="col-lg-6 order-last order-lg-first">
                     <div class="about-text-wrap">
-                        <h2><span>Provide Best</span>Product For You</h2>
-                        <p>We provide the best Beard oile all over the world. We are the worldd best store in indi for Beard Oil. You can buy our product without any hegitation because they truste us and buy our product without any hagitation because they belive and always happy buy our product.</p>
-                        <p>Some of our customer say’s that they trust us and buy our product without any hagitation because they belive us and always happy to buy our product.</p>
-                        <p>We provide the beshat they trusted us and buy our product without any hagitation because they belive us and always happy to buy.</p>
+                        <h2><span>Sứ mệnh mang</span>Nông Sản Sạch Cho Bạn</h2>
+                        <p>Nông Sản Xanh được ra đời từ niềm đam mê với nông nghiệp sạch và mong muốn bảo vệ sức khỏe cộng đồng. Chúng tôi tự hào là đơn vị tiên phong tại Đà Nẵng ứng dụng công nghệ AI để tuyển chọn những sản phẩm tốt nhất từ các trang trại VietGAP.</p>
+                        <p>Với sự hỗ trợ từ các chuyên gia tại Đại học Duy Tân, mỗi sản phẩm tại cửa hàng đều trải qua quy trình kiểm định nghiêm ngặt, đảm bảo 3 tiêu chí: Tươi - Sạch - Nguồn gốc rõ ràng.</p>
+                        <p>Chúng tôi không chỉ bán nông sản, chúng tôi trao gửi niềm tin và sức khỏe cho mỗi bữa cơm gia đình bạn. Hãy cùng Nông Sản Xanh xây dựng một lối sống lành mạnh từ hôm nay.</p>
                     </div>
                 </div>
                 <!-- About Text End -->
                 <!-- About Image Start -->
                 <div class="col-lg-5 col-md-10">
                     <div class="about-image-wrap">
-                        <img class="img-full" src="{{ asset('theme/user/images/product/large-size/13.jpg') }}" alt="About Us" />
+                        <img class="img-full rounded" src="{{ asset('uploads/about/hero.png') }}" alt="Nông Sản Xanh Farm" />
                     </div>
                 </div>
                 <!-- About Image End -->
@@ -50,10 +50,10 @@
                             </div>
                             <div class="counter-info">
                                 <div class="counter-number">
-                                    <h3 class="counter">2169</h3>
+                                    <h3 class="counter">5000</h3>
                                 </div>
                                 <div class="counter-text">
-                                    <span>HAPPY CUSTOMERS</span>
+                                    <span>KHÁCH HÀNG TIN DÙNG</span>
                                 </div>
                             </div>
                         </div>
@@ -68,10 +68,10 @@
                         </div>
                         <div class="counter-info">
                             <div class="counter-number">
-                                <h3 class="counter">869</h3>
+                                <h3 class="counter">50</h3>
                             </div>
                             <div class="counter-text">
-                                <span>AWARDS WINNED</span>
+                                <span>TRANG TRẠI LIÊN KẾT</span>
                             </div>
                         </div>
                     </div>
@@ -85,10 +85,10 @@
                         </div>
                         <div class="counter-info">
                             <div class="counter-number">
-                                <h3 class="counter">689</h3>
+                                <h3 class="counter">100</h3>
                             </div>
                             <div class="counter-text">
-                                <span>HOURS WORKED</span>
+                                <span>% SẢN PHẨM SẠCH</span>
                             </div>
                         </div>
                     </div>
@@ -102,10 +102,10 @@
                         </div>
                         <div class="counter-info">
                             <div class="counter-number">
-                                <h3 class="counter">2169</h3>
+                                <h3 class="counter">10</h3>
                             </div>
                             <div class="counter-text">
-                                <span>COMPLETE PROJECTS</span>
+                                <span>NĂM KINH NGHIỆM</span>
                             </div>
                         </div>
                     </div>
@@ -121,7 +121,7 @@
             <div class="row">
                 <div class="col-12">
                     <div class="li-section-title capitalize mb-25">
-                        <h2><span>our team</span></h2>
+                        <h2><span>Đội ngũ chuyên gia</span></h2>
                     </div>
                 </div>
             </div> <!-- section title end -->
@@ -129,12 +129,12 @@
                 <div class="col-lg-3 col-md-6 col-sm-6">
                     <div class="team-member mb-60 mb-sm-30 mb-xs-30">
                         <div class="team-thumb">
-                            <img src="{{ asset('theme/user/images/team/1.png') }}" alt="Our Team Member">
+                            <img class="img-full rounded-circle" src="{{ asset('uploads/about/team1.png') }}" alt="Expert">
                         </div>
                         <div class="team-content text-center">
-                            <h3>Jonathan Scott</h3>
-                            <p>IT Expert</p>
-                            <a href="#">info@example.com</a>
+                            <h3>Nguyễn Văn An</h3>
+                            <p>Kỹ sư Nông nghiệp</p>
+                            <a href="#">an.nguyen@nongsanxanh.vn</a>
                             <div class="team-social">
                                 <a href="#"><i class="fa fa-facebook"></i></a>
                                 <a href="#"><i class="fa fa-twitter"></i></a>
@@ -147,12 +147,12 @@
                 <div class="col-lg-3 col-md-6 col-sm-6">
                     <div class="team-member mb-60 mb-sm-30 mb-xs-30">
                         <div class="team-thumb">
-                            <img src="{{ asset('theme/user/images/team/2.png') }}" alt="Our Team Member">
+                            <img class="img-full rounded-circle" src="{{ asset('uploads/about/team2.png') }}" alt="Expert">
                         </div>
                         <div class="team-content text-center">
-                            <h3>Oliver Bastin</h3>
-                            <p>Web Designer</p>
-                            <a href="#">info@example.com</a>
+                            <h3>Trần Thị Bình</h3>
+                            <p>Chuyên gia Kiểm định</p>
+                            <a href="#">binh.tran@nongsanxanh.vn</a>
                             <div class="team-social">
                                 <a href="#"><i class="fa fa-facebook"></i></a>
                                 <a href="#"><i class="fa fa-twitter"></i></a>
@@ -168,9 +168,9 @@
                             <img src="{{ asset('theme/user/images/team/3.png') }}" alt="Our Team Member">
                         </div>
                         <div class="team-content text-center">
-                            <h3>Erik Jonson</h3>
-                            <p>Web Developer</p>
-                            <a href="#">info@example.com</a>
+                            <h3>Lê Hoàng Nam</h3>
+                            <p>Quản lý Vận hành</p>
+                            <a href="#">nam.le@nongsanxanh.vn</a>
                             <div class="team-social">
                                 <a href="#"><i class="fa fa-facebook"></i></a>
                                 <a href="#"><i class="fa fa-twitter"></i></a>
@@ -186,9 +186,9 @@
                             <img src="{{ asset('theme/user/images/team/4.png') }}" alt="Our Team Member">
                         </div>
                         <div class="team-content text-center">
-                            <h3>Maria Mandy</h3>
-                            <p>Marketing officer</p>
-                            <a href="#">info@example.com</a>
+                            <h3>Phạm Minh Đức</h3>
+                            <p>Chuyên viên Marketing</p>
+                            <a href="#">duc.pham@nongsanxanh.vn</a>
                             <div class="team-social">
                                 <a href="#"><i class="fa fa-facebook"></i></a>
                                 <a href="#"><i class="fa fa-twitter"></i></a>

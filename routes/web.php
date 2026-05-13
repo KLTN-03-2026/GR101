@@ -53,10 +53,12 @@ Route::group(['middleware' => ['checkStatusUser']], function () {
     Route::get('category/{id}/detail', [\App\Http\Controllers\Web\CategoryController::class, 'categoryDetail'])->name('detail.category');
 
     Route::get('search', [\App\Http\Controllers\Web\HomeController::class, 'search'])->name('search');
+    Route::get('search-autocomplete', [\App\Http\Controllers\Web\HomeController::class, 'autocomplete'])->name('search.autocomplete');
 
     Route::get('about', [\App\Http\Controllers\Web\HomeController::class, 'about'])->name('about');
 
-    Route::get('contact', [\App\Http\Controllers\Web\HomeController::class, 'contact'])->name('contact');
+    Route::get('contact', [\App\Http\Controllers\Web\ContactController::class, 'index'])->name('contact');
+    Route::post('contact', [\App\Http\Controllers\Web\ContactController::class, 'store'])->name('contact.post');
 
     Route::get('add-cart', [\App\Http\Controllers\Web\CartController::class, 'addCart'])
         ->name('cart.add')
@@ -66,7 +68,10 @@ Route::group(['middleware' => ['checkStatusUser']], function () {
 Route::group(['middleware' => ['auth:web', 'checkStatusUser']], function () {
     Route::get('cart', [\App\Http\Controllers\Web\CartController::class, 'listProductInCart'])->name('list.product.cart');
 
-    Route::get('delete', [\App\Http\Controllers\Web\CartController::class, 'deleteProductCart'])->name('delete.product.cart');
+    Route::get('delete-product-cart', [\App\Http\Controllers\Web\CartController::class, 'deleteProductCart'])->name('delete.product.cart');
+    Route::get('delete-selected-cart', [\App\Http\Controllers\Web\CartController::class, 'deleteSelected'])->name('delete.selected.cart');
+    Route::get('clear-cart', [\App\Http\Controllers\Web\CartController::class, 'clearCart'])->name('clear.cart');
+    Route::post('bulk-add-cart', [\App\Http\Controllers\Web\CartController::class, 'addBulkCart'])->name('cart.bulk_add');
 
     Route::post('create-order', [\App\Http\Controllers\Web\OrderController::class, 'createOrder'])->name('create.order');
     Route::get('checkout', [\App\Http\Controllers\Web\OrderController::class, 'checkOut'])->name('checkout.order');
@@ -75,7 +80,7 @@ Route::group(['middleware' => ['auth:web', 'checkStatusUser']], function () {
 
     Route::get('profile', [\App\Http\Controllers\Web\ProfileController::class, 'showFormProfile'])->name('profile');
     Route::post('profile/{id}', [\App\Http\Controllers\Web\ProfileController::class, 'profile'])->name('profile.post');
-    Route::get('momo-return', [\App\Http\Controllers\Web\OrderController::class, 'momoReturn'])->name('momo_return');
+
 
     Route::get('list-order', [\App\Http\Controllers\Web\OrderController::class, 'listOrderOfUser'])->name('list_order_of_user');
     Route::get('order/{id}', [\App\Http\Controllers\Web\OrderController::class, 'orderDetail'])->name('order_detail');
@@ -83,4 +88,7 @@ Route::group(['middleware' => ['auth:web', 'checkStatusUser']], function () {
 
     Route::get('vnpay/create', [\App\Http\Controllers\Web\VnpayController::class, 'create'])->name('vnpay.create');
     Route::get('/vnpay/return', [\App\Http\Controllers\Web\VnpayController::class, 'return'])->name('vnpay.return');
+
+    Route::post('product/review', [\App\Http\Controllers\Web\ReviewController::class, 'store'])->name('product.review');
+    Route::get('check-coupon', [\App\Http\Controllers\Web\CartController::class, 'checkCoupon'])->name('check_coupon');
 });

@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class ShippingFeeController extends Controller
@@ -35,9 +36,9 @@ class ShippingFeeController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(): View
     {
-        //
+        return view('admin.city.create');
     }
 
     /**
@@ -46,9 +47,29 @@ class ShippingFeeController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        //
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:city,name'],
+            'shipping_fee' => ['required', function ($attribute, $value, $fail) {
+                if (!$this->isValidShippingFee($value)) {
+                    $fail('Phí vận chuyển không hợp lệ.');
+                }
+            }],
+        ]);
+
+        try {
+            $city = new City();
+            $city->name = $data['name'];
+            $city->code = $this->makeCityCode($data['name']);
+            $city->shipping_fee = $this->normalizeShippingFee($data['shipping_fee']);
+            $city->save();
+
+            return redirect()->route('admin.cities.edit', $city->id)->with('success', 'Thêm thành công');
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+            return redirect()->back()->withInput()->with('error', $exception->getMessage());
+        }
     }
 
     /**
@@ -71,6 +92,11 @@ class ShippingFeeController extends Controller
     public function edit($id): View
     {
         $city = City::find($id);
+
+        if (empty($city)) {
+            abort(404);
+        }
+
         return view('admin.city.edit', compact('city'));
     }
 
@@ -83,9 +109,18 @@ class ShippingFeeController extends Controller
      */
     public function update(Request $request, $id): RedirectResponse
     {
+        $request->validate([
+            'shipping_fee' => ['required', function ($attribute, $value, $fail) {
+                if (!$this->isValidShippingFee($value)) {
+                    $fail('Phí vận chuyển không hợp lệ.');
+                }
+            }],
+        ]);
+
         try {
             $city = City::find($id);
             $data = $request->all();
+            $data['shipping_fee'] = $this->normalizeShippingFee($request->get('shipping_fee', 0));
 
             $city->fill($data);
 
@@ -107,5 +142,37 @@ class ShippingFeeController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    private function normalizeShippingFee($value): float
+    {
+        $number = preg_replace('/[^\d.]/', '', (string) $value);
+
+        return (float) ($number ?: 0);
+    }
+
+    private function isValidShippingFee($value): bool
+    {
+        if (strpos((string) $value, '-') !== false) {
+            return false;
+        }
+
+        $number = preg_replace('/[^\d.]/', '', (string) $value);
+
+        return $number !== '' && is_numeric($number) && (float) $number >= 0;
+    }
+
+    private function makeCityCode(string $name): string
+    {
+        $baseCode = Str::slug($name) ?: 'city';
+        $code = $baseCode;
+        $index = 1;
+
+        while (City::where('code', $code)->exists()) {
+            $code = $baseCode . '-' . $index;
+            $index++;
+        }
+
+        return $code;
     }
 }

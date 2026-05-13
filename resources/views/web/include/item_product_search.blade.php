@@ -1,55 +1,61 @@
-<div class="col-3 mt-40">
-    <!-- single-product-wrap start -->
-    <div class="single-product-wrap">
-        <div class="product-image">
-            <a href="{{ route('web.detail', $product->id) }}">
-                <img src="{{ $product->getImage() }}" alt="Li's Product Image">
+<div class="col-lg-3 col-md-4 col-sm-6 mb-8 group">
+    <!-- Modern Product Card -->
+    <div class="bg-white rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col h-full overflow-hidden group-hover:-translate-y-2">
+        
+        <!-- Product Image Section -->
+        <div class="relative aspect-square overflow-hidden bg-gray-50/50 p-6 flex items-center justify-center">
+            <a href="{{ route('web.detail', $product->id) }}" class="w-full h-full block">
+                <img src="{{ $product->getImage() }}" 
+                     alt="{{ $product->name }}" 
+                     class="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110">
             </a>
-        </div>
-       <div class="product_desc" style="padding: 12px; background: #fff; border-radius: 0 0 12px 12px; font-family: 'SF Pro Display', -apple-system, system-ui, sans-serif;">
-    
-    <div class="product_desc_info">
-        <div class="product-review" style="margin-bottom: 8px;">
-            <span style="display: inline-block; padding: 2px 8px; border: 1px solid #d1d5db; border-radius: 4px; background: #f9fafb;">
-                <h5 class="manufacturer" style="margin: 0; line-height: 1;">
-                    <a href="#" style="font-size: 12px; color: #374151; text-decoration: none; font-weight: 500;">
-                        {{ $product->Category->name ?? 'Sản phẩm' }}
-                    </a>
-                </h5>
-            </span>
+            
+            <!-- Quick Action / Badge -->
+            <div class="absolute top-4 left-4">
+                <span class="bg-white/90 backdrop-blur-sm text-green-800 text-[10px] font-black px-3 py-1 rounded-full shadow-sm border border-green-100 uppercase tracking-tighter">
+                    {{ $product->Category->name ?? 'Sản phẩm' }}
+                </span>
+            </div>
         </div>
 
-        <h4 style="margin: 0 0 12px 0;">
-            <a class="product_name" href="{{ route('web.detail', $product->id) }}" 
-               style="font-size: 17px; color: #4b5563; text-decoration: none; font-weight: 400; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 44px;">
-                {{ $product->name }}
-            </a>
-        </h4>
+        <!-- Product Details Section -->
+        <div class="p-6 flex flex-col flex-1 space-y-4">
+            <!-- Product Name -->
+            <h3 class="font-bold text-gray-900 text-lg leading-snug h-14 overflow-hidden group-hover:text-primary-green transition-colors">
+                <a href="{{ route('web.detail', $product->id) }}">
+                    {{ $product->name }}
+                </a>
+            </h3>
 
-        <div class="price-box" style="margin-bottom: 15px;">
-            <div style="display: flex; align-items: baseline; color: #c2410c;">
-                <span class="new-price" style="font-size: 22px; font-weight: 700;">
+            <!-- Price Area -->
+            <div class="flex items-baseline gap-1.5">
+                <span class="text-2xl font-black text-gray-900 leading-none">
                     {{ number_format($product->getPrice(), 0, ',', '.') }}
                 </span>
-                <span style="font-size: 16px; font-weight: 700; margin-left: 2px;">VNĐ</span>
+                <span class="text-sm font-bold text-gray-400 uppercase tracking-widest">
+                    VNĐ @if($product->unit) <span class="text-gray-300 mx-0.5">/</span> {{ $product->unit }} @endif
+                </span>
             </div>
-            <div style="font-size: 13px; color: #9ca3af; text-decoration: line-through; margin-top: -2px;">
-                ({{ number_format($product->getPrice() * 1.1, 0, ',', '.') }}đ/kg)
-            </div>
-        </div>
-        
-        <div style="font-size: 13px; color: #f59e0b; font-weight: 600; text-transform: uppercase; margin-bottom: 10px;">
-            TẶNG GIA VỊ (Mua từ 0.6kg)
-        </div>
-    </div>
 
-    <div class="add-actions" style="margin: 0 -12px -12px -12px;">
-        <a href="{{ route('web.detail', $product->id) }}" 
-           style="display: block; width: 100%; background: #f0fdf4; color: #166534; text-align: center; padding: 12px 0; border-radius: 0 0 12px 12px; font-weight: 600; font-size: 16px; text-decoration: none; transition: 0.3s; border-top: 1px solid #dcfce7;">
-            MUA
-        </a>
+            <!-- Promotion / Metadata (Optional) -->
+            <div class="flex items-center gap-2 text-[11px] font-bold text-orange-500 uppercase">
+                <i class="fa fa-certificate"></i>
+                <span>Tươi Ngon Mỗi Ngày</span>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="pt-2 flex gap-2">
+                <button type="button" 
+                        onclick="quickAddToCart(event, '{{ $product->id }}')"
+                        class="w-14 h-14 bg-soft-green text-green-900 rounded-2xl flex items-center justify-center hover:bg-green-900 hover:text-white transition-all shadow-md active:scale-90 group/btn">
+                    <i class="fa fa-cart-plus text-lg group-hover/btn:scale-110 transition-transform"></i>
+                </button>
+                <a href="{{ route('web.detail', $product->id) }}" 
+                   class="flex-1 bg-gray-900 text-white py-4 rounded-2xl font-black text-[11px] tracking-widest hover:bg-green-900 transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 uppercase">
+                    Chi tiết
+                    <i class="fa fa-chevron-right text-[8px]"></i>
+                </a>
+            </div>
+        </div>
     </div>
-</div>
-    </div>
-    <!-- single-product-wrap end -->
 </div>

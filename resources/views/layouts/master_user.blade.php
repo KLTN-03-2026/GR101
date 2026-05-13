@@ -47,14 +47,159 @@
     <link rel="stylesheet" href="{{ asset('theme/user/style.css') }}">
     <!-- Responsive CSS -->
     <link rel="stylesheet" href="{{ asset('theme/user/css/responsive.css') }}">
+    
+    @yield('css')
+
     <!-- Modernizr js -->
     <script src="{{ asset('theme/user/js/vendor/modernizr-2.8.3.min.js') }}"></script>
 
+    <!-- noUiSlider -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>
+
     {{-- <link rel="stylesheet" href="{{ asset('lib/fontawesome/css/all.css') }}"> --}}
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@500&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-green': '#166534',
+                        'soft-green': '#f0fdf4',
+                        'accent-yellow': '#facc15',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { 
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            color: #1c1e21; /* Facebook-like text color */
+        }
+
+        /* Improved Border Visibility */
+        .border-gray-50 { border-color: #f0f2f5 !important; }
+        .border-gray-100 { border-color: #ebedf0 !important; }
+        .border-gray-200 { border-color: #dadde1 !important; }
+        
+        .shadow-sm { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important; }
+        
+        hr { border-top: 1px solid #dadde1 !important; }
+
+        /* Hide number input arrows */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        /* --- Custom Floating Contact Buttons --- */
+        .nsx-fab-wrapper {
+            position: fixed;
+            bottom: 100px; /* Đẩy cao lên để không đè vào nút chat */
+            right: 20px; /* Chuyển sang bên phải theo yêu cầu */
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .nsx-fab-item {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+
+        .nsx-fab-item:hover {
+            transform: scale(1.1) translateY(-5px);
+            color: white;
+        }
+
+        .nsx-fab-item i {
+            font-size: 22px;
+        }
+
+        /* Biện pháp mạnh: Ẩn tất cả các thành phần mạng xã hội từ bên thứ 3 */
+        .tdc-social-channels, 
+        .tdc-social-item,
+        .tdc-clicker,
+        .tdc-button-wrap,
+        #zalo-chat-widget,
+        [class*="tdc-social"], 
+        [id*="tdc-social"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            height: 0 !important;
+            width: 0 !important;
+            pointer-events: none !important;
+            position: absolute !important;
+            left: -9999px !important;
+        }
+
+        /* Giữ lại nút Tư vấn chính của TDC (nếu cần) nhưng đảm bảo không chồng lấn */
+        /* Nếu bạn muốn ẩn luôn cả nút Tư vấn, hãy thêm img[src*="tudongchat.com"] vào danh sách trên */
+
+        /* Tooltip - Hiển thị bên TRÁI của nút (vào trong màn hình) */
+        .nsx-fab-item::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            right: 65px; 
+            background: #333;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            pointer-events: none;
+            font-weight: 600;
+        }
+
+        .nsx-fab-item:hover::before {
+            opacity: 1;
+            visibility: visible;
+            right: 60px;
+        }
+
+        /* Colors */
+        .nsx-fab-zalo { background: #0084ff; }
+        .nsx-fab-messenger { background: #00B2FF; background: linear-gradient(135deg, #00B2FF 0%, #006AFF 100%); }
+        .nsx-fab-phone { background: #ee4d2d; animation: nsx-pulse 2s infinite; }
+        .nsx-fab-top { background: #166534; opacity: 0; visibility: hidden; }
+        .nsx-fab-top.show { opacity: 1; visibility: visible; }
+
+        @keyframes nsx-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(238, 77, 45, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(238, 77, 45, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(238, 77, 45, 0); }
+        }
+    </style>
 
     <style>
         .carousel-inner img {
@@ -62,32 +207,97 @@
             height: 100%;
         }
 
-        #vegPrefForm {
+        #vegPrefModal .ai-shop-modal-dialog {
+            max-width: 920px;
+            margin: 1rem auto;
+        }
+
+        #vegPrefModal .ai-shop-modal {
+            max-height: calc(100vh - 2rem);
+            overflow: hidden;
+        }
+
+        #vegPrefForm,
+        #vegPrefModal .ai-shop-shell {
             display: flex;
             flex-direction: column;
-            height: 600px;
+            max-height: calc(100vh - 2rem);
+            min-height: 0;
         }
 
-        #vegPrefForm .modal-body {
+        #vegPrefModal .ai-shop-header,
+        #vegPrefModal .ai-shop-footer {
+            flex: 0 0 auto;
+        }
+
+        #vegPrefModal .ai-shop-body {
             flex: 1 1 auto;
+            min-height: 0;
             overflow-y: auto;
-            padding-bottom: 15px;
         }
 
-        #vegPrefForm .modal-footer {
-            flex-shrink: 0;
+        #vegPrefModal .ai-recipe-panel {
+            min-height: 118px;
+            align-items: stretch;
         }
 
-        #dish_recipe_content {
-            white-space: pre-wrap;
-            border: 1px solid #eee;
-            padding: 12px;
+        #vegPrefModal #dish_recipe_content {
+            white-space: normal;
+            border: 0;
+            padding: 0;
             display: none;
-            background: #fff;
-            max-height: 340px;
+            background: transparent;
+            max-height: none;
+            overflow: visible;
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        #vegPrefModal #dish_recipe_content > div {
+            max-height: 175px;
             overflow-y: auto;
-            border-radius: 6px;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+
+        #vegPrefModal .ai-results {
+            max-height: none;
+            overflow: visible;
+        }
+
+        #vegPrefModal .veg-card img {
+            height: 118px !important;
+            object-fit: contain !important;
+            background: #f9fafb;
+        }
+
+        #vegPrefModal .ai-shop-footer button {
+            min-height: 54px;
+            white-space: normal;
+            line-height: 1.25;
+        }
+
+        @media (max-width: 767.98px) {
+            #vegPrefModal .ai-shop-modal-dialog {
+                margin: .5rem;
+            }
+
+            #vegPrefModal .ai-shop-modal,
+            #vegPrefForm,
+            #vegPrefModal .ai-shop-shell {
+                max-height: calc(100vh - 1rem);
+            }
+
+            #vegPrefModal .ai-shop-body {
+                padding: 1rem !important;
+            }
+
+            #vegPrefModal .ai-shop-footer {
+                padding: .75rem !important;
+                flex-direction: column;
+            }
+
+            #vegPrefModal .ai-shop-footer button {
+                width: 100%;
+            }
         }
 
         /* loader container */
@@ -171,291 +381,206 @@
     <!-- Begin Body Wrapper -->
     <div class="body-wrapper">
         <!-- Begin Header Area -->
-        <header>
-            <!-- Begin Header Top Area -->
-            <div class="header-top">
-                <div class="container">
-                    <div class="row">
-                        <!-- Begin Header Top Left Area -->
-                        <div class="col-lg-3 col-md-4">
-                            <div class="header-top-left">
-                                <ul class="phone-wrap">
-                                    <li><span>Điện thoại:</span><a href="#">(+84) 584246834</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                        <!-- Header Top Left Area End Here -->
-                        <!-- Begin Header Top Right Area -->
-                        <div class="col-lg-9 col-md-8">
-                            <div class="header-top-right">
-                                <ul class="ht-menu">
-                                    <!-- Begin Setting Area -->
-                                    <li>
-                                        @if (\Illuminate\Support\Facades\Auth::guard('web')->check())
-                                            <div class="ht-setting-trigger">
-                                                <span>{{ \Illuminate\Support\Facades\Auth::guard('web')->user()->name }}</span>
-                                            </div>
-                                            <div class="setting ht-setting">
-                                                <ul class="ht-setting-list">
-                                                    <li><a href="{{ route('web.profile') }}">Tài khoản</a></li>
-                                                    <li><a href="{{ route('web.list_order_of_user') }}">Danh sách đơn
-                                                            đặt hàng</a></li>
-                                                    <li><a href="{{ route('web.logout') }}">Đăng xuất</a></li>
-                                                </ul>
-                                            </div>
-                                        @else
-                                            <div class="ht-setting-trigger"><span>Đăng nhập để mua hàng</span></div>
-                                            <div class="setting ht-setting">
-                                                <ul class="ht-setting-list">
-                                                    <li><a href="{{ route('web.register') }}">Đăng kí</a></li>
-                                                    <li><a href="{{ route('web.login') }}">Đăng nhập</a></li>
-                                                </ul>
-                                            </div>
-                                        @endif
+        <!-- Begin Modern Header Area -->
+        <header class="font-sans bg-white">
 
-                                    </li>
-                                    <!-- Setting Area End Here -->
-                                </ul>
-                            </div>
+            <!-- Main Header -->
+            <div class="py-2.5 px-4 md:px-10 border-b border-gray-100">
+                <div class="max-w-[1500px] mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+                    <!-- Logo -->
+                    <a href="{{ route('web.index') }}" class="flex items-center gap-3 shrink-0 group">
+                        <div class="w-14 h-14 bg-primary-green rounded-2xl flex items-center justify-center overflow-hidden shadow-lg group-hover:rotate-6 transition-transform duration-300">
+                             <i class="fa fa-leaf text-white text-2xl"></i>
                         </div>
-                        <!-- Header Top Right Area End Here -->
-                    </div>
-                </div>
-            </div>
-            <!-- Header Top Area End Here -->
-            <!-- Begin Header Middle Area -->
-            <div class="header-middle pl-sm-0 pr-sm-0 pl-xs-0 pr-xs-0">
-                <div class="container">
-                    <div class="row">
-                        <!-- Begin Header Logo Area -->
-                        <div class="col-lg-3">
-                            <div class="logo pb-sm-30 pb-xs-30">
-                                <a href="{{ route('web.index') }}">
-                                    <img src="{{ asset('theme/user/images/menu/logo/nongsan.png') }}" alt="Footer Logo"
-                                        style="width: 100px; height: auto;">
-                                </a>
-                            </div>
+                        <div class="hidden sm:block">
+                            <h1 class="text-3xl font-extrabold text-green-900 leading-none tracking-tight">AgriAI</h1>
+                            <p class="text-[10px] uppercase tracking-[0.2em] text-green-600 font-bold mt-1">Nông Sản Mỹ Thuật</p>
                         </div>
-                        <!-- Header Logo Area End Here -->
-                        <!-- Begin Header Middle Right Area -->
-                        <div class="col-lg-9 pl-0 ml-sm-15 ml-xs-15">
-                            <!-- Begin Header Middle Searchbox Area -->
-                            <form action="{{ route('web.search') }}" class="hm-searchbox">
-                                <input type="text" placeholder="Hôm nay mua sắm thực phẩm gì?" name="search"
-                                    value="{{ request()->get('search') ?? '' }}">
-                                <button class="li-btn"><i class="fa fa-search"></i></button>
-                            </form>
-                            <!-- Header Middle Searchbox Area End Here -->
-                            <!-- Begin Header Middle Right Area -->
-                            <div class="header-middle-right">
-                                <ul class="hm-menu" id="cart-icon">
-                                    <!-- Begin Header Mini Cart Area -->
-                                    <li class="hm-minicart">
-                                        <div class="hm-minicart-trigger">
-                                            <span class="item-icon"></span>
-                                            <span class="item-text">Giỏ hàng<span class="cart-item-count">
-                                                    @if (\Illuminate\Support\Facades\Auth::guard('web')->check())
-                                                        {{ \Illuminate\Support\Facades\Auth::guard('web')->user()->countListProductInCart() }}
-                                                    @else
-                                                        0
-                                                    @endif
-                                                </span>
-                                            </span>
-                                        </div>
-                                    </li>
-                                    <!-- Header Mini Cart Area End Here -->
-                                </ul>
-                            </div>
-                            <!-- Header Middle Right Area End Here -->
-                        </div>
-                        <!-- Header Middle Right Area End Here -->
-                    </div>
-                </div>
-            </div>
-            <!-- Header Middle Area End Here -->
-            <!-- Begin Header Bottom Area -->
-            <div class="header-bottom header-sticky d-none d-lg-block">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <!-- Begin Header Bottom Menu Area -->
-                            <div class="hb-menu hb-menu-2 d-xl-block">
-                                <nav>
-                                    <ul>
-                                        <li><a href="{{ route('web.index') }}">Trang chủ</a></li>
-                                        <li><a href="{{ route('web.about') }}">Về chúng tôi</a></li>
-                                        <li><a href="{{ route('web.contact') }}">Liên hệ</a></li>
-                                        <li>
-                                            <a href="#" data-toggle="modal" data-target="#vegPrefModal"
-                                                class="hb-menu-link">
-                                                🤖 AI Gợi ý mua sắm
-                                            </a>
+                    </a>
 
-                                        </li>
-                                    </ul>
-                                </nav>
+                    <!-- Search -->
+                    <div class="flex-1 w-full max-w-2xl relative group px-4">
+                        <form action="{{ route('web.search') }}" class="relative group">
+                            <input 
+                                type="text" 
+                                name="search"
+                                id="header-search-input"
+                                value="{{ request()->get('search') ?? '' }}"
+                                placeholder="Hôm nay bạn cần mua gì?"
+                                class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-8 outline-none focus:bg-white focus:border-green-600/20 focus:shadow-[0_20px_50px_rgba(22,101,52,0.1)] transition-all duration-300 text-gray-700 placeholder:text-gray-400 shadow-inner font-medium"
+                                autocomplete="off"
+                            />
+                            <div id="search-suggestions" class="absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden hidden z-[1001]">
+                                <!-- Suggestions will be rendered here -->
                             </div>
-                            <!-- Header Bottom Menu Area End Here -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Header Bottom Area End Here -->
-            <!-- Begin Mobile Menu Area -->
-            <div class="mobile-menu-area d-lg-none d-xl-none col-12">
-                <div class="container">
-                    <div class="row">
-                        <div class="mobile-menu">
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Mobile Menu Area End Here -->
-        </header>
-        <!-- Header Area End Here -->
-        <div class="modal fade" id="vegPrefModal" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
-                <div class="modal-content border-0">
-
-                    {{-- <form id="vegPrefForm" class="needs-validation" novalidate>
-                        @csrf
-
-                        <div class="modal-header py-3" style="border-bottom: 1px solid #eee;">
-                            <h5 class="modal-title" style="font-weight:600;">🤖 AI Gợi ý mua sắm</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
-                                <span aria-hidden="true">&times;</span>
+                            <button type="submit" class="absolute right-2 top-2 bottom-2 px-8 bg-green-900 text-white rounded-[1.25rem] hover:bg-black transition-all flex items-center justify-center shadow-lg active:scale-95 group-hover:shadow-green-900/20">
+                                <i class="fa fa-search text-sm"></i>
                             </button>
-                        </div>
+                        </form>
+                    </div>
 
-                        @php
-                            use App\Models\Category;
-                            $categories = Category::orderBy('name')->get();
-                        @endphp
+                    <!-- Actions -->
+                    <div class="flex items-center gap-4">
+                        <!-- Cart -->
+                        <a href="#" id="cart-icon" class="relative group flex items-center gap-4 bg-white border border-gray-100 p-1.5 pr-8 rounded-full hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:border-green-100 transition-all duration-500 active:scale-95">
+                            <div class="w-12 h-12 bg-green-900 rounded-full flex items-center justify-center text-white shadow-lg group-hover:rotate-12 transition-transform duration-300">
+                                <i class="fa fa-shopping-basket text-lg"></i>
+                                <span class="absolute -top-1 -right-1 bg-yellow-400 text-green-900 text-[10px] font-black w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                                    @if (\Illuminate\Support\Facades\Auth::guard('web')->check())
+                                        {{ \Illuminate\Support\Facades\Auth::guard('web')->user()->countListProductInCart() }}
+                                    @else
+                                        0
+                                    @endif
+                                </span>
+                            </div>
+                            <div class="hidden lg:block leading-tight">
+                                <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Giỏ hàng</span>
+                                <span class="block text-sm font-black text-gray-900 tracking-tight">Thanh toán</span>
+                            </div>
+                        </a>
 
-                        <div class="modal-body">
-                            <div class="form-row">
-                                <div class="form-group col-md-6">
-                                    <label class="small mb-1">Danh mục ưa thích</label>
-                                    <select name="category_id" class="form-control" multiple>
-                                        @foreach ($categories as $cat)
-                                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                <div class="form-group col-md-6">
-                                    <label class="small mb-1">Cách dùng</label>
-                                    <select name="uses[]" class="form-control" multiple>
-                                        <option value="salad">Salad</option>
-                                        <option value="stir-fry">Xào</option>
-                                        <option value="soup">Nấu canh</option>
-                                        <option value="grill">Nướng</option>
-                                        <option value="juice">Ép/Detox</option>
-                                        <option value="hotpot">Lẩu</option>
-                                    </select>
-                                </div>
-
-                                <div class="form-group col-md-6">
-                                    <label class="small mb-1">Organic</label>
-                                    <select name="organic" class="form-control">
-                                        <option value="either">Không quan trọng</option>
-                                        <option value="yes">Có</option>
-                                        <option value="no">Không</option>
-                                    </select>
-                                </div>
-
-                                <div class="form-group col-md-6">
-                                    <label class="small mb-1">Nguồn gốc</label>
-                                    <select name="origin" class="form-control">
-                                        <option value="">Không quan trọng</option>
-                                        <option value="local">Nội địa</option>
-                                        <option value="import">Nhập khẩu</option>
-                                    </select>
-                                </div>
-
-                                <div class="form-group col-md-12">
-                                    <label class="small mb-1">Khoảng giá (VND)</label>
-                                    <div class="form-row">
-                                        <div class="col">
-                                            <input type="number" name="price_min" class="form-control"
-                                                placeholder="Từ">
+                        <!-- User Account -->
+                        @if (\Illuminate\Support\Facades\Auth::guard('web')->check())
+                            <div class="group relative">
+                                <button class="flex items-center gap-3 bg-white border border-gray-100 p-1 pr-6 rounded-full hover:shadow-xl hover:border-green-100 transition-all duration-300 active:scale-95">
+                                    <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 shadow-inner group-hover:bg-primary-green group-hover:text-white transition-all duration-300">
+                                        <i class="fa fa-user text-sm"></i>
+                                    </div>
+                                    <div class="hidden lg:block text-left leading-tight">
+                                        <span class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Xin chào,</span>
+                                        <span class="block text-sm font-black text-gray-900 tracking-tight">{{ \Illuminate\Support\Facades\Auth::guard('web')->user()->name }}</span>
+                                    </div>
+                                </button>
+                                
+                                <!-- Dropdown Menu (Simplified & Reliable) -->
+                                <div class="absolute right-0 top-full pt-1 hidden group-hover:block z-[9999]">
+                                    <div class="bg-white shadow-[0_10px_40px_rgba(0,0,0,0.15)] border border-gray-100 rounded-[1.5rem] w-60 overflow-hidden">
+                                        <div class="px-6 py-4 bg-gray-50/80 border-b border-gray-100">
+                                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Tài khoản</p>
+                                            <p class="text-sm font-bold text-gray-900 truncate">{{ \Illuminate\Support\Facades\Auth::guard('web')->user()->email }}</p>
                                         </div>
-                                        <div class="col">
-                                            <input type="number" name="price_max" class="form-control"
-                                                placeholder="Đến">
+                                        <div class="p-2">
+                                            <a href="{{ route('web.profile') }}" class="flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:bg-soft-green hover:text-green-700 rounded-xl transition-colors font-medium">
+                                                <i class="fa fa-user-circle text-lg opacity-40"></i> 
+                                                Thông tin cá nhân
+                                            </a>
+                                            <a href="{{ route('web.list_order_of_user') }}" class="flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:bg-soft-green hover:text-green-700 rounded-xl transition-colors font-medium">
+                                                <i class="fa fa-shopping-bag text-lg opacity-40"></i> 
+                                                Đơn hàng của tôi
+                                            </a>
+                                            <div class="border-t border-gray-50 my-1 mx-2"></div>
+                                            <a href="{{ route('web.logout') }}" class="flex items-center gap-3 px-4 py-3 text-sm text-red-500 hover:bg-red-50 rounded-xl transition-colors font-black">
+                                                <i class="fa fa-sign-out-alt text-lg opacity-80"></i> 
+                                                Đăng xuất
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        @else
+                            <div class="flex items-center gap-3 pl-2">
+                                <a href="{{ route('web.login') }}" class="text-sm font-black text-gray-400 hover:text-green-600 transition-colors uppercase tracking-widest">Login</a>
+                                <a href="{{ route('web.register') }}" class="bg-green-900 text-white px-8 py-3.5 rounded-full font-black text-xs tracking-widest hover:bg-black transition-all shadow-xl active:scale-95 uppercase">Join Now</a>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
 
-                                <div class="form-group col-md-12">
-                                    <label class="small mb-1 d-flex align-items-center">Mức “tươi” <span
-                                            class="ml-2 badge badge-light" id="freshnessLabel">8</span></label>
-                                    <input type="range" name="freshness" class="custom-range" min="1"
-                                        max="10" value="8"
-                                        oninput="document.getElementById('freshnessLabel').innerText=this.value">
-                                    <small class="form-text text-muted">1 = không quá tươi, 10 = rất tươi</small>
+            <!-- Sticky Navigation -->
+            <nav class="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-[1000] overflow-x-auto whitespace-nowrap hidden lg:block shadow-sm">
+                <div class="max-w-7xl mx-auto px-8 py-4 flex justify-center gap-12">
+                    <a href="{{ route('web.index') }}" class="text-sm font-black tracking-widest transition-all relative py-1 {{ request()->routeIs('web.index') ? 'text-green-600 after:content-[\'\'] after:absolute after:bottom-0 after:left-0 after:w-full after:h-1 after:bg-green-600 after:rounded-full' : 'text-gray-500 hover:text-green-600' }}">TRANG CHỦ</a>
+                    <a href="{{ route('web.about') }}" class="text-sm font-black tracking-widest transition-all relative py-1 {{ request()->routeIs('web.about') ? 'text-green-600 after:content-[\'\'] after:absolute after:bottom-0 after:left-0 after:w-full after:h-1 after:bg-green-600 after:rounded-full' : 'text-gray-500 hover:text-green-600' }}">VỀ CHÚNG TÔI</a>
+                    <a href="{{ route('web.contact') }}" class="text-sm font-black tracking-widest transition-all relative py-1 {{ request()->routeIs('web.contact') ? 'text-green-600 after:content-[\'\'] after:absolute after:bottom-0 after:left-0 after:w-full after:h-1 after:bg-green-600 after:rounded-full' : 'text-gray-500 hover:text-green-600' }}">LIÊN HỆ</a>
+                    <a href="#" data-toggle="modal" data-target="#vegPrefModal" class="text-sm font-black tracking-widest text-green-700 bg-soft-green px-4 py-1 rounded-full hover:bg-green-100 transition-all flex items-center gap-2">
+                        <span class="animate-pulse text-lg"></span> AI GỢI Ý MUA SẮM
+                    </a>
+                </div>
+            </nav>
+        </header>
+        <!-- Header Area End Here -->
+
+
+    <!-- Premium AI Recommendation Modal -->
+    <div class="modal fade" id="vegPrefModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg ai-shop-modal-dialog" role="document">
+            <div class="modal-content rounded-[2.5rem] border-none shadow-2xl bg-white ai-shop-modal">
+                <form id="vegPrefForm" method="POST" action="{{ route('web.ai.recommend') }}">
+                    @csrf
+                    <div class="relative ai-shop-shell">
+                        <!-- Header with Background Gradient -->
+                        <div class="bg-gradient-to-r from-green-900 to-green-800 p-6 text-white relative ai-shop-header">
+                            <button type="button" class="absolute top-6 right-6 text-white/50 hover:text-white transition-colors" data-dismiss="modal">
+                                <i class="fa fa-times text-xl"></i>
+                            </button>
+                            <div class="flex items-center gap-4">
+                                <div class="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-3xl">🤖</div>
+                                <div>
+                                    <h5 class="text-xl font-black tracking-tight text-white mb-0">AI Gợi ý mua sắm</h5>
+                                    <p class="text-white/60 text-[10px] font-bold uppercase tracking-widest mt-1">Trợ lý đầu bếp thông minh</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-6 ai-shop-body custom-scrollbar">
+                            <div class="mb-6">
+                                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Bạn muốn nấu món gì?</label>
+                                <div class="relative group">
+                                    <div class="absolute left-5 top-1/2 -translate-y-1/2 text-green-900/30 group-focus-within:text-green-900 transition-colors">
+                                        <i class="fa fa-utensils"></i>
+                                    </div>
+                                    <input type="text" id="dish_name" name="dish_name" 
+                                           class="w-full bg-gray-50 border-2 border-gray-100 focus:border-green-900 focus:bg-white rounded-2xl py-4 pl-12 pr-6 text-gray-900 font-bold placeholder:text-gray-300 outline-none transition-all"
+                                           placeholder="Ví dụ: Cá chiên, bò kho..." autocomplete="off">
+                                    
+                                    <div id="dish_suggestions" class="absolute top-full left-0 w-full bg-white mt-2 rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[1000] hidden">
+                                        <!-- Suggestions will be injected here -->
+                                    </div>
                                 </div>
                             </div>
 
-                            <hr class="my-3">
-
-                            <div id="vegResults" class="row"></div>
-                        </div>
-
-                        <div class="modal-footer" style="border-top: 1px solid #eee;">
-                            <button type="button" id="btnRecommend" class="btn btn-primary btn-sm">
-                                Gợi ý ngay
-                            </button>
-                            <button type="button" class="btn btn-outline-secondary btn-sm" data-dismiss="modal">
-                                Đóng
-                            </button>
-                        </div>
-                    </form>  --}}
-
-
-                    <form id="vegPrefForm" class="needs-validation" novalidate style="height: 600px" method="POST"
-                        action="{{ route('web.ai.recommend') }}">
-
-                        @csrf
-                        <div class="modal-header py-3" style="border-bottom: 1px solid #eee;">
-                            <h5 class="modal-title" style="font-weight:600;">🤖 AI Gợi ý mua sắm</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-
-                        <div class="modal-body">
-                            <div class="form-group mb-3">
-                                <label class="form-label fw-semibold">Bạn muốn nấu món gì?</label>
-                                <input type="text" id="dish_name" name="dish_name" class="form-control"
-                                    placeholder="Ví dụ: Cá chiên, canh rau củ, salad trộn..." autocomplete="off">
-                                <div id="dish_suggestions" class="list-group position-absolute"
-                                    style="z-index:1000; width:93%"></div>
-                            </div>
-
-                            <!-- Hidden input chứa công thức để submit -->
+                            <!-- Hidden recipe field -->
                             <input type="hidden" name="dish_recipe" id="dish_recipe_hidden">
 
-                            <div id="dish_recipe_loader" class="ai-loader">
-                                <div>🤖 AI đang đợi bạn nhập món</div>
-                                <div class="dots"><span></span><span></span></div>
+                            <!-- Loader / Content Area -->
+                            <div class="flex flex-col items-center justify-center text-center p-4 bg-gray-50 rounded-3xl border border-gray-100 border-dashed transition-all ai-recipe-panel" id="dish_recipe_area">
+                                <div id="dish_recipe_loader" class="flex flex-col items-center gap-4">
+                                    <div class="w-10 h-10 border-4 border-green-900/10 border-t-green-900 rounded-full animate-spin"></div>
+                                    <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest">AI đang sẵn sàng...</p>
+                                </div>
+                                
+                                <div id="dish_recipe_content" class="hidden w-full text-left">
+                                    <p class="text-[10px] font-black text-green-900 uppercase tracking-widest mb-3">Công thức tìm thấy:</p>
+                                    <div class="text-gray-600 text-sm leading-relaxed pr-4 custom-scrollbar whitespace-pre-wrap font-medium"></div>
+                                </div>
+
+                                <div id="dish_recipe_notfound" class="hidden flex flex-col items-center gap-2">
+                                    <i class="fa fa-info-circle text-gray-300 text-xl"></i>
+                                    <p class="text-gray-400 text-[10px] font-bold italic">AI sẽ giúp bạn tìm công thức phù hợp nhất!</p>
+                                </div>
                             </div>
 
-                            <div id="dish_recipe_content" style="display:none; white-space:pre-wrap;"></div>
-                            <div id="dish_recipe_notfound" style="display:none; color:#666;">
-                                Không tìm thấy công thức cho món này.
-                            </div>
+                            <!-- AI Suggested Products Container - Added scroll if too many products -->
+                            <div id="vegResults" class="row mt-5 ai-results"></div>
                         </div>
 
-                        <div class="modal-footer" style="border-top: 1px solid #eee;">
-                            <button type="submit" class="btn btn-primary btn-sm">
-                                Gợi ý nguyên liệu
+                        <div class="p-5 bg-gray-50/95 flex gap-3 border-t border-gray-100 ai-shop-footer">
+                            <button type="button" id="btnRecommend" class="flex-[2] bg-green-900 text-white py-4 rounded-xl font-black text-[11px] tracking-widest uppercase shadow-lg hover:bg-black transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2">
+                                Khám phá nguyên liệu <i class="fa fa-arrow-right"></i>
                             </button>
-                            <button type="button" class="btn btn-outline-secondary btn-sm" data-dismiss="modal">
+                            <button type="button" id="btnAddAllToCart" class="hidden flex-[2] bg-yellow-400 text-green-900 py-4 rounded-xl font-black text-[11px] tracking-widest uppercase shadow-lg hover:bg-yellow-500 transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2">
+                                Thêm tất cả vào giỏ <i class="fa fa-cart-plus"></i>
+                            </button>
+                            <button type="button" class="flex-1 px-6 bg-white border border-gray-200 text-gray-500 py-4 rounded-xl font-black text-[11px] tracking-widest uppercase hover:bg-gray-50 transition-all" data-dismiss="modal">
                                 Đóng
                             </button>
                         </div>
-                    </form>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
                 </div>
             </div>
@@ -463,36 +588,29 @@
 
         {{-- Styles nhỏ cho z-index & card --}}
         <style>
-            .header-sticky {
-                z-index: 100;
-            }
+            .header-sticky { z-index: 100; }
+            .modal-backdrop { z-index: 1050; }
+            .modal { z-index: 1060; }
 
-            .modal-backdrop {
-                z-index: 1050;
-            }
+            .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+            .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+            .custom-scrollbar::-webkit-scrollbar-thumb { background: #14532d; border-radius: 10px; }
 
-            .modal {
-                z-index: 1060;
-            }
-
-            .veg-card {
-                border: 1px solid #eee;
-                border-radius: .5rem;
-                height: 100%;
-                padding: 1rem;
-            }
-
-            .veg-title {
+            .suggestion-item {
+                padding: 1rem 1.5rem;
                 font-weight: 600;
-                font-size: .95rem;
-                margin-bottom: .25rem;
+                font-size: 0.875rem;
+                color: #1f2937;
+                border-bottom: 1px solid #f3f4f6;
+                transition: all 0.2s;
+                display: block;
             }
-
-            .veg-meta {
-                font-size: .8rem;
-                color: #6c757d;
-                margin-bottom: .5rem;
+            .suggestion-item:hover {
+                background-color: #f0fdf4;
+                color: #14532d;
+                padding-left: 2rem;
             }
+            .suggestion-item:last-child { border-bottom: none; }
         </style>
 
         <div class="mb-5">
@@ -508,192 +626,6 @@
                 </div>
             @endif
             @yield('content')
-        </div>
-        <div class="sale-banner-container"
-            style="
-    /* CSS cho Banner */
-    background-color: #FFEE00; 
-    display: flex;
-    align-items: center;
-    padding: 15px 20px;
-    font-family: Arial, sans-serif;
-    max-width: 1200px; 
-    margin: 20px auto;
-">
-            <div class="banner-image-wrap"
-                style="
-        padding: 5px;
-        background-color: white; 
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    ">
-                <img src="" alt="" class="banner-image"
-                    style="
-            width: 120px; 
-            height: auto;
-            border-radius: 4px;
-            display: block;
-        ">
-            </div>
-
-            <div class="banner-content"
-                style="
-        flex-grow: 1;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-left: 20px;
-    ">
-                <h2 class="product-title"
-                    style="
-            font-size: 50px;
-            font-weight: 900;
-            color: #007D3E; 
-            text-shadow: 3px 3px 0 #FFFFFF; 
-            line-height: 1;
-            margin: 0;
-            padding-right: 20px;
-        ">
-                    THỊT XAY
-                </h2>
-
-                <div class="price-and-condition" style="
-            text-align: right;
-        ">
-                    <span class="sale-price"
-                        style="
-                font-size: 75px;
-                font-weight: 900;
-                color: #D30000; 
-                text-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2); 
-                line-height: 1;
-                display: inline-block;
-            ">
-                        9.<span style="font-size: 0.6em; margin-right: 5px;">000</span>
-                    </span>
-                    <span class="vnd-symbol"
-                        style="
-                font-size: 40px;
-                font-weight: 900;
-                vertical-align: top;
-                margin-right: -10px;
-                color: #D30000;
-            ">
-                        đ
-                    </span>
-                    <span class="unit"
-                        style="
-                font-size: 30px;
-                font-weight: 700;
-                color: #D30000;
-                vertical-align: top;
-                margin-left: 5px;
-            ">
-                        /100g
-                    </span>
-
-                    <p class="condition"
-                        style="
-                font-size: 28px;
-                font-weight: bold;
-                color: #D30000;
-                text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
-                margin-top: 5px;
-                margin-bottom: 0;
-            ">
-                        Khi mua kèm rau, củ, nấm
-                    </p>
-                </div>
-            </div>
-        </div>
-        <div style="text-align: center; margin: 0 auto; max-width: 1800px; padding: 20px;">
-
-            <h2 style="color: #4CAF50;">Củ, quả là gì?</h2>
-            <p>
-                <strong>Củ, quả</strong> là hai bộ phận khác nhau của thực vật, thường được chúng ta sử dụng làm thực
-                phẩm.
-            </p>
-
-            <h3 style="text-align: left; color: #4CAF50;">• Củ là gì?</h3>
-            <p style="text-align: left; margin-left: 20px;">
-                Củ là phần phình to của rễ hoặc thân cây (tùy loại), có chức năng dự trữ chất dinh dưỡng để nuôi cây
-                phát triển (khoai lang, khoai tây, cà rốt, củ cải, củ gừng, củ hành, củ tỏi,...). Có củ mọc dưới đất
-                (khoai lang, cà rốt), có củ mọc gần mặt đất hoặc ngay phần gốc thân.
-            </p>
-
-            <h3 style="text-align: left; color: #4CAF50;">• Quả là gì?</h3>
-            <p style="text-align: left; margin-left: 20px;">
-                Quả là cơ quan sinh sản của cây, hình thành từ bầu nhụy sau khi hoa được thụ phấn. Bên trong quả thường
-                chứa hạt, giúp cây duy trì và phát tán giống. Ví dụ: Cà chua, ớt, bí,...
-            </p>
-
-            <hr style="border: 1px solid #ccc; width: 100%; margin: 20px auto;">
-
-            <h2 style="text-align: left; color: #4CAF50;">Thành phần dinh dưỡng của củ, quả</h2>
-            <p>
-                Các loại củ, quả đa dạng màu sắc sẽ cung cấp phần lớn là **nước** cho cơ thể bạn, bởi trong các loại rau
-                củ chứa khoảng **70 - 95% là nước**. Bên cạnh đó củ, quả còn là nguồn cung cấp các chất **bột đường**,
-                các **vitamin A, B, C, E, K…** và các **khoáng chất** cần thiết cho sự phát triển của cơ thể.
-            </p>
-
-            <hr style="border: 1px solid #ccc; width: 80%; margin: 20px auto;">
-
-            <h2 style="text-align: left; color: #4CAF50;">Lợi ích của củ, quả cho sức khỏe</h2>
-            <ul style="text-align: left; margin-left: 10%; list-style-type: disc;">
-                <li>Củ, quả chứa rất nhiều **vitamin và chất dinh dưỡng** nên mang đến rất nhiều lợi ích cho sức khỏe
-                    con người.</li>
-                <li>**Hỗ trợ giảm cân**</li>
-                <li>Giảm nguy cơ mắc các bệnh về **tim mạch, béo phì và cả ung thư**</li>
-                <li>Tăng cường **sức đề kháng** của cơ thể</li>
-                <li>**Cải thiện thị lực**</li>
-                <li>**Điều hòa đường huyết**</li>
-                <li>Giảm **cholesterol** trong máu</li>
-                <li>**Điều hòa huyết áp**</li>
-            </ul>
-
-            <hr style="border: 1px solid #ccc; width: 80%; margin: 20px auto;">
-
-            <h2 style="text-align: left; color: #4CAF50;">Cách chọn củ, quả tươi ngon</h2>
-            <ul style="text-align: left; margin-left: 10%; list-style-type: disc;">
-                <li>**Dựa vào hình dáng bên ngoài:** Nên ưu tiên chọn các loại củ, quả có phần vỏ không có các vết sâu,
-                    cuống lá không bị nhũn, thâm đen. Tránh chọn những loại quả có vẻ ngoài to tròn, căng lớn, bởi đây
-                    có thể là những quả đã bị tiêm thuốc, không an toàn cho sức khỏe.</li>
-                <li>**Dựa vào màu sắc:** Màu sắc của các loại củ, quả thường tươi mới, không có các vết xước, héo hay
-                    quá đậm màu. Các loại củ có màu quá xanh hoặc quá bóng sẽ không hẳn là an toàn cho sức khỏe người
-                    dùng.</li>
-                <li>**Dựa vào mùi hương:** Mùi hương tự nhiên của các loại củ, quả sẽ là mùi đặc trưng theo từng loại
-                    chứ không phải là mùi hắc, nồng khó chịu. Nếu các loại củ bạn đang chọn có mùi hóa chất hãy ngưng sử
-                    dụng ngay.</li>
-                <li>**Dựa vào cảm nhận khi cầm:** Những loại củ quả cầm chắc tay, kích thước vừa phải, không quá to sẽ
-                    thường ngon hơn những loại to lớn nhưng khối lượng nhẹ. Một số loại rau củ bạn chỉ nên chọn những
-                    quả nhỏ, đều tay sẽ ngon hơn.</li>
-            </ul>
-
-            <hr style="border: 1px solid #ccc; width: 80%; margin: 20px auto;">
-
-            <h2 style="text-align: left; color: #4CAF50;">Các loại củ, quả</h2>
-            <ul style="text-align: left; margin-left: 10%; list-style-type: disc;">
-                <li>**Củ, quả hầm, luộc:** Cà rốt, khoai tây, củ dền, bí đỏ, củ sắn,...</li>
-                <li>**Củ, quả xào:** Cà chua, bạc hà, đậu bắp,...</li>
-                <li>**Củ, quả nấu canh:** Su hào, mướp, bắp mỹ, bí đao,... </li>
-                <li>**Củ, quả trộn salad, gỏi:** Bắp cải, cà chua, dưa leo,...</li>
-            </ul>
-
-            <hr style="border: 1px solid #ccc; width: 80%; margin: 20px auto;">
-
-            <h2 style="text-align: left; color: #4CAF50;">Các sản phẩm củ, quả được ưa chuộng nhất hiện nay</h2>
-            <ul style="text-align: left; margin-left: 10%; list-style-type: disc;">
-                <li>**Cà rốt:** Đây là loại củ quen thuộc trong bữa ăn hằng ngày. Cà rốt Đà Lạt có vị tươi ngọt, ít sử
-                    dụng phân thuốc nên rất an toàn cho sức khỏe người tiêu dùng.</li>
-                <li>**Khoai tây:** Khoai tây là nguồn bổ sung tinh bột dồi dào cho cơ thể. Hương vị ngọt bùi nên thích
-                    hợp với các món hầm bổ dưỡng. Củ khoai to tròn, vỏ mỏng và không sâu úng. </li>
-                <li>**Cà chua:** Cà chua có nguồn gốc Lâm Đồng trái cà tròn đều và dày cơm. Cà chua chứa nhiều chất
-                    chống oxy hóa, làm đẹp da cho chị em phụ nữ.</li>
-                <li>**Su su:** Quả su giòn và ngọt thích hợp với các món xào hoặc luộc đều rất ngon. Su có nguồn gốc từ
-                    Lâm Đồng, đảm bảo tươi và an toàn cho sức khỏe.</li>
-                <li>**Bí xanh:** Bí xanh tươi cung cấp nhiều chất xơ, nước cho cơ thể. Bí thích hợp với các món canh,
-                    hầm bổ dưỡng.</li>
-            </ul>
         </div>
         <!-- Begin Footer Area -->
         <div class="footer">
@@ -784,11 +716,11 @@
                                 <ul class="des" style="list-style: none; padding-left: 0;">
                                     <li>
                                         <span>Địa chỉ Trang trại & Cửa hàng: </span>
-                                        **Khu Nông Nghiệp Công Nghệ Cao, Lô A1, TP.HCM** (Thay thế địa chỉ cụ thể)
+                                        **Đại học Duy Tân - Đà Nẵng
                                     </li>
                                     <li>
                                         <span>Hotline Đặt hàng: </span>
-                                        <a href="tel:+84584246834">(+84) 584 246 834</a>
+                                        <a href="tel:+84584246834">(+84) 123456789</a>
                                     </li>
                                     <li>
                                         <span>Email Hỗ trợ: </span>
@@ -881,10 +813,79 @@
             </div>
             <!-- Footer Static Bottom Area End Here -->
         </div>
+        <!-- Nông Sản Xanh Floating Buttons (Right Side) -->
+        <div class="nsx-fab-wrapper">
+            <!-- Facebook -->
+            <a href="https://www.facebook.com/jeno19cc" target="_blank" class="nsx-fab-item nsx-fab-messenger" data-tooltip="Facebook Cá nhân">
+                <i class="fa fa-facebook"></i>
+            </a>
+
+            <!-- Zalo -->
+            <a href="https://zalo.me/0344192141" target="_blank" class="nsx-fab-item nsx-fab-zalo" data-tooltip="Zalo: 0344.192.141">
+                <i class="fa fa-comment"></i>
+            </a>
+
+            <!-- Hotline -->
+            <a href="tel:0344192141" class="nsx-fab-item nsx-fab-phone" data-tooltip="Gọi Hotline: 0344.192.141">
+                <i class="fa fa-phone"></i>
+            </a>
+
+            <!-- Back to Top -->
+            <a href="javascript:void(0)" class="nsx-fab-item nsx-fab-top" id="nsx-back-to-top" data-tooltip="Lên đầu trang">
+                <i class="fa fa-angle-up"></i>
+            </a>
+        </div>
+
+        <!-- TuDongChat Integration -->
         <script src="https://app.tudongchat.com/js/chatbox.js"></script>
         <script>
             const tudong_chatbox = new TuDongChat('5mTKohbMB-i-PcTxM_iHg')
             tudong_chatbox.initial()
+
+            // Xử lý triệt để việc ẩn các nút mạng xã hội trùng lặp sau khi TuDongChat load
+            window.addEventListener('load', function() {
+                const hideTrashButtons = () => {
+                    const selectors = [
+                        '.tdc-social-channels',
+                        '.tdc-social-item',
+                        '.tdc-clicker',
+                        '.tdc-button-wrap',
+                        '#zalo-chat-widget'
+                    ];
+                    selectors.forEach(s => {
+                        const els = document.querySelectorAll(s);
+                        els.forEach(el => {
+                            el.style.setProperty('display', 'none', 'important');
+                            el.style.setProperty('visibility', 'hidden', 'important');
+                            el.remove(); // Xóa luôn khỏi DOM cho chắc chắn
+                        });
+                    });
+                };
+
+                // Chạy ngay và chạy lại sau 2s, 5s để đảm bảo dọn sạch các nút chèn muộn
+                hideTrashButtons();
+                setTimeout(hideTrashButtons, 2000);
+                setTimeout(hideTrashButtons, 5000);
+                
+                // Lắng nghe sự thay đổi của DOM để xóa nếu nó tự hiện lại
+                const observer = new MutationObserver(hideTrashButtons);
+                observer.observe(document.body, { childList: true, subtree: true });
+            });
+        </script>
+
+        <script>
+            // Back to top functionality
+            window.onscroll = function() {
+                if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                    document.getElementById("nsx-back-to-top").classList.add("show");
+                } else {
+                    document.getElementById("nsx-back-to-top").classList.remove("show");
+                }
+            };
+
+            document.getElementById("nsx-back-to-top").onclick = function() {
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            };
         </script>
         <!-- Footer Area End Here -->
     </div>
@@ -954,63 +955,193 @@
             var $form = $('#vegPrefForm');
             var $results = $('#vegResults');
 
+            function escapeHtml(value) {
+                return $('<div>').text(value || '').html();
+            }
+
+            function showLoader() {
+                $('#dish_recipe_content').hide();
+                $('#dish_recipe_notfound').hide();
+                $('#dish_recipe_loader').show();
+                $('#dish_recipe_area').addClass('border-dashed bg-gray-50').removeClass('bg-white');
+            }
+
+            function showRecipe(text, persistInput) {
+                $('#dish_recipe_loader').hide();
+                if (persistInput !== false) {
+                    $('#dish_recipe_hidden').val(text || '');
+                }
+
+                if (text && text.trim().length) {
+                    $('#dish_recipe_content div').html(text);
+                    $('#dish_recipe_content').removeClass('hidden').show();
+                    $('#dish_recipe_notfound').hide();
+                    $('#dish_recipe_area').removeClass('border-dashed bg-gray-50').addClass('bg-white');
+                } else {
+                    $('#dish_recipe_content').hide();
+                    $('#dish_recipe_notfound').removeClass('hidden').show();
+                    $('#dish_recipe_area').addClass('border-dashed bg-gray-50').removeClass('bg-white');
+                }
+            }
+
+            function hideRecipe() {
+                $('#dish_recipe_loader').hide();
+                $('#dish_recipe_content').hide();
+                $('#dish_recipe_notfound').hide();
+                $('#dish_recipe_hidden').val('');
+                $('#dish_recipe_area').addClass('border-dashed bg-gray-50').removeClass('bg-white');
+            }
+
+            function buildRecipeHtml(res) {
+                var html = '';
+
+                if (res.mo_ta) {
+                    html += '<p class="mb-3">' + escapeHtml(res.mo_ta) + '</p>';
+                }
+
+                if (res.nguyen_lieu && res.nguyen_lieu.length) {
+                    html += '<p class="text-[10px] font-black text-green-900 uppercase tracking-widest mb-2">Nguyen lieu:</p><ul class="pl-4 mb-3">';
+                    html += res.nguyen_lieu.map(function(item) {
+                        return '<li class="mb-1">' + escapeHtml(item) + '</li>';
+                    }).join('');
+                    html += '</ul>';
+                }
+
+                if (res.cach_lam && res.cach_lam.length) {
+                    html += '<p class="text-[10px] font-black text-green-900 uppercase tracking-widest mb-2">Cach lam:</p><ol class="pl-4 mb-0">';
+                    html += res.cach_lam.map(function(step) {
+                        return '<li class="mb-1">' + escapeHtml(step) + '</li>';
+                    }).join('');
+                    html += '</ol>';
+                }
+
+                if (!html && res.congthuc) {
+                    html = escapeHtml(res.congthuc);
+                }
+
+                return html;
+            }
+
             // mỗi lần mở modal, xoá kết quả cũ (tùy chọn)
             $('#vegPrefModal').on('shown.bs.modal', function() {
                 $results.empty();
             });
 
-            $('#btnRecommend').on('click', function() {
-                // đảm bảo không có submit mặc định
-                // (vì nút là type="button" nên không submit)
-                var catVal = $form.find('select[name="category_id"]').val();
-                var category_id = Array.isArray(catVal) ? (catVal[0] || '') : (catVal || '');
-
-                if (!category_id) {
-                    $results.html('<div class="col-12 text-danger">Vui lòng chọn danh mục.</div>');
+            // AI Recommendation Logic
+            $('#btnRecommend').on('click', function(e) {
+                e.preventDefault();
+                var dish_name = $('#dish_name').val() ? $('#dish_name').val().trim() : '';
+                
+                if (!dish_name) {
+                    $results.html('<div class="col-12 text-warning">Vui lòng nhập tên món ăn để AI gợi ý.</div>');
                     return;
                 }
 
-                $results.html('<div class="col-12 text-muted">Đang tải sản phẩm...</div>');
+                $results.html('<div class="col-12 text-center py-4"><i class="fa fa-spinner fa-spin fa-2x mb-2"></i><p>AI đang phân tích món ăn và tìm sản phẩm phù hợp...</p></div>');
+                showLoader();
+
+                var congthuc = $('#dish_recipe_hidden').val() ? $('#dish_recipe_hidden').val().trim() : '';
 
                 $.ajax({
-                    url: "{{ route('web.recommend') }}", // ĐẢM BẢO route này tồn tại (mục 3)
+                    url: "{{ route('web.ai.recommend') }}",
                     type: "POST",
                     data: JSON.stringify({
-                        category_id: category_id
+                        tenmon: dish_name,
+                        congthuc: congthuc
                     }),
                     contentType: "application/json; charset=utf-8",
                     dataType: "json",
                     headers: {
-                        'X-CSRF-TOKEN': $form.find('input[name="_token"]').val()
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') || $form.find('input[name="_token"]').val()
                     },
                     success: function(res) {
+                        // Hiển thị công thức
+                        showRecipe(buildRecipeHtml(res), false);
+
+                        // Hiển thị sản phẩm gợi ý
                         if (!res.items || !res.items.length) {
                             $results.html(
-                                '<div class="col-12 text-muted">Chưa có sản phẩm trong danh mục này.</div>'
+                                '<div class="col-12 text-muted text-center py-4">AI không tìm thấy sản phẩm nào khớp hoàn toàn. Bạn có thể thử tìm thủ công hoặc nhập tên món khác.</div>'
                             );
+                            $('#btnAddAllToCart').addClass('hidden');
                             return;
                         }
-                        var html = res.items.map(function(item) {
+
+                        // Show 'Add all' button if products found
+                        $('#btnAddAllToCart').removeClass('hidden').data('product-ids', res.items.map(i => i.id));
+
+                        var html = '<div class="col-12 mb-3"><h6 class="font-weight-bold text-success"><i class="fa fa-shopping-basket"></i> Sản phẩm nên mua:</h6></div>';
+                        html += res.items.map(function(item) {
                             return `
-              <div class="col-sm-6 col-md-6 col-lg-6 mb-6">
-                <div class="veg-card">
-                  ${item.thumbnail ? `<div class="mb-2 text-center"><img src="${item.thumbnail}" alt="${item.name}" style="max-width:100%;height:auto"></div>` : ``}
-                  <div class="veg-title">${item.name}</div>
-                  <div class="veg-meta">${item.category_name || ''}</div>
-                  <div>Giá: <strong>${new Intl.NumberFormat('vi-VN').format(item.price)} ₫</strong></div>
-                  ${typeof item.stock !== 'undefined' ? `<div class="mb-2">Còn: ${item.stock}</div>` : ``}
-                  ${item.url ? `<a href="${item.url}" class="btn btn-success btn-sm btn-block">Xem chi tiết</a>` : ``}
-                </div>
-              </div>
-            `;
+                                <div class="col-6 col-md-4 mb-4">
+                                    <div class="veg-card h-100 shadow-sm border-0 rounded-lg overflow-hidden">
+                                        <div class="position-relative">
+                                            <img src="${escapeHtml(item.thumbnail)}" class="card-img-top w-100" style="height:140px; object-fit:cover" alt="${escapeHtml(item.name)}">
+                                            <span class="position-absolute top-0 right-0 badge badge-success m-2">Gợi ý</span>
+                                        </div>
+                                        <div class="p-3">
+                                            <h6 class="veg-title mb-1 text-truncate">${escapeHtml(item.name)}</h6>
+                                            <p class="text-muted mb-1 small">${escapeHtml(item.category_name || 'Nguyen lieu')}</p>
+                                            <p class="text-danger font-weight-bold mb-2 small">${new Intl.NumberFormat('vi-VN').format(item.price)} ₫</p>
+                                            <a href="${escapeHtml(item.url)}" class="btn btn-outline-success btn-sm btn-block rounded-pill">Mua ngay</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
                         }).join('');
                         $results.html(html);
                     },
                     error: function(xhr) {
                         console.error(xhr.responseText || xhr.statusText);
                         $results.html(
-                            '<div class="col-12 text-danger">Có lỗi xảy ra. Vui lòng thử lại.</div>'
+                            '<div class="col-12 text-danger text-center py-4">Rất tiếc, AI đang bận hoặc gặp lỗi. Vui lòng thử lại sau vài phút.</div>'
                         );
+                        $('#btnAddAllToCart').addClass('hidden');
+                        hideRecipe();
+                    }
+                });
+            });
+
+            // Handle Add All to Cart
+            $('#btnAddAllToCart').on('click', function() {
+                var productIds = $(this).data('product-ids');
+                if (!productIds || !productIds.length) return;
+
+                $.LoadingOverlay('show');
+                $.ajax({
+                    url: "{{ route('web.cart.bulk_add') }}",
+                    method: 'POST',
+                    data: {
+                        product_ids: productIds,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(res) {
+                        $.LoadingOverlay('hide');
+                        if (res.success) {
+                            $('.cart-item-count').text(res.qty);
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Thành công',
+                                text: res.message,
+                                showConfirmButton: true
+                            }).then(() => {
+                                $('#vegPrefModal').modal('hide');
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Lỗi',
+                                text: res.message
+                            });
+                        }
+                    },
+                    error: function() {
+                        $.LoadingOverlay('hide');
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Thông báo',
+                            text: 'Vui lòng đăng nhập để thực hiện tính năng này'
+                        });
                     }
                 });
             });
@@ -1021,38 +1152,44 @@
         $(function() {
             // helper: show loader area
             function showLoader() {
-                $('#dish_recipe').show();
                 $('#dish_recipe_content').hide();
                 $('#dish_recipe_notfound').hide();
                 $('#dish_recipe_loader').show();
+                $('#dish_recipe_area').addClass('border-dashed bg-gray-50').removeClass('bg-white');
             }
 
             function showRecipe(text) {
                 $('#dish_recipe_loader').hide();
-
                 $('#dish_recipe_hidden').val(text);
 
                 if (text && text.trim().length) {
-                    $('#dish_recipe_content').text(text).show();
+                    $('#dish_recipe_content div').text(text);
+                    $('#dish_recipe_content').removeClass('hidden').show();
                     $('#dish_recipe_notfound').hide();
+                    $('#dish_recipe_area').removeClass('border-dashed bg-gray-50').addClass('bg-white');
                 } else {
                     $('#dish_recipe_content').hide();
-                    $('#dish_recipe_notfound').show();
+                    $('#dish_recipe_notfound').removeClass('hidden').show();
+                    $('#dish_recipe_area').addClass('border-dashed bg-gray-50').removeClass('bg-white');
                 }
             }
 
 
             function hideRecipe() {
-                $('#dish_recipe').hide();
-                // $('#dish_recipe_loader').hide();
+                $('#dish_recipe_loader').hide();
                 $('#dish_recipe_content').hide();
                 $('#dish_recipe_notfound').hide();
+                $('#dish_recipe_area').addClass('border-dashed bg-gray-50').removeClass('bg-white');
             }
 
             // Autocomplete: fetch suggestions
             var ajaxSuggest;
             $('#dish_name').on('keyup', function() {
                 var q = $(this).val().trim();
+                $('#dish_recipe_hidden').val('');
+                $('#vegResults').empty();
+                $('#btnAddAllToCart').addClass('hidden');
+
                 if (q.length < 1) {
                     $('#dish_suggestions').hide().empty();
                     hideRecipe();
@@ -1082,7 +1219,7 @@
                 });
             });
 
-            // Click suggestion -> fill input + fetch recipe
+            // Click suggestion -> fill input + fetch recipe -> Trigger AI Recommend
             $(document).on('click', '.suggestion-item', function(e) {
                 e.preventDefault();
                 var name = $(this).text();
@@ -1102,42 +1239,17 @@
                     success: function(res) {
                         var text = res.congthuc ?? '';
                         showRecipe(text);
+                        // Tự động kích hoạt gợi ý sản phẩm sau khi có công thức
+                        $('#btnRecommend').trigger('click');
                     },
                     error: function() {
                         showRecipe(''); // show notfound
+                        $('#btnRecommend').trigger('click');
                     }
                 });
             });
 
-            // If user clicks "Gợi nguyên liệu" button, fetch based on current input
-            $('#btnRecommend').on('click', function(e) {
-                e.preventDefault();
-                var name = $('#dish_name').val().trim();
-                if (!name) {
-                    // give quick UX hint
-                    $('#dish_recipe').show();
-                    // $('#dish_recipe_loader').hide();
-                    $('#dish_recipe_content').hide();
-                    $('#dish_recipe_notfound').text('Vui lòng nhập tên món để AI gợi ý.').show();
-                    return;
-                }
-
-                showLoader();
-                $.ajax({
-                    url: "{{ route('web.get.recipe') }}",
-                    data: {
-                        tenmonan: name
-                    },
-                    method: 'GET',
-                    success: function(res) {
-                        var text = res.congthuc ?? '';
-                        showRecipe(text);
-                    },
-                    error: function() {
-                        showRecipe('');
-                    }
-                });
-            });
+            // (Events consolidated above for #btnRecommend)
 
             // click outside to hide suggestions (keep recipe visible)
             $(document).on('click', function(e) {
@@ -1161,6 +1273,99 @@
 
     @yield('js')
     @yield('js_attr_search')
+    <script>
+        $(document).ready(function() {
+            let searchTimer;
+            $('#header-search-input').on('input', function() {
+                const query = $(this).val();
+                clearTimeout(searchTimer);
+                
+                if (query.length < 2) {
+                    $('#search-suggestions').addClass('hidden');
+                    return;
+                }
+
+                searchTimer = setTimeout(function() {
+                    $.ajax({
+                        url: '{{ route("web.search.autocomplete") }}',
+                        data: { query: query },
+                        success: function(res) {
+                            let html = '';
+                            if (res.length > 0) {
+                                res.forEach(item => {
+                                    html += `
+                                        <a href="${item.url}" class="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0">
+                                            <img src="${item.image}" class="w-10 h-10 rounded-lg object-cover">
+                                            <div class="flex-1">
+                                                <p class="text-sm font-bold text-gray-900">${item.name}</p>
+                                                <p class="text-[10px] font-black text-green-700">${item.price}</p>
+                                            </div>
+                                        </a>
+                                    `;
+                                });
+                                $('#search-suggestions').html(html).removeClass('hidden');
+                            } else {
+                                $('#search-suggestions').addClass('hidden');
+                            }
+                        }
+                    });
+                }, 300);
+            });
+
+            // Close suggestions when clicking outside
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.group').length) {
+                    $('#search-suggestions').addClass('hidden');
+                }
+            });
+        });
+
+        function quickAddToCart(event, productId) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            $.LoadingOverlay('show');
+            $.ajax({
+                url: '{{ route("web.cart.add") }}',
+                method: 'get',
+                data: {
+                    product_id: productId,
+                    quantity: 1
+                },
+                success: function(res) {
+                    $.LoadingOverlay('hide');
+                    if (res.success) {
+                        $('.cart-item-count').text(res.data.qty);
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Đã thêm vào giỏ!',
+                            text: res.data.message,
+                            showConfirmButton: false,
+                            timer: 1500,
+                            toast: true,
+                            position: 'top-end'
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi',
+                            text: res.data.message
+                        });
+                    }
+                },
+                error: function() {
+                    $.LoadingOverlay('hide');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Thông báo',
+                        text: 'Vui lòng đăng nhập để thực hiện tính năng này'
+                    });
+                }
+            });
+        }
+    </script>
+
+    @yield('js')
 </body>
 
 <!-- index-231:38-->

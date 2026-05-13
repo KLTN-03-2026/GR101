@@ -23,12 +23,22 @@ class CouponRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            'name'         => 'required',
-            'discount_max' => 'numeric|nullable',
+        $rules = [
+            'name'         => 'required|unique:coupons,name,' . ($this->route('coupon')?->id ?? ''),
+            'type'         => 'required|in:price,percent',
+            'discount'     => 'required|numeric|min:0',
+            'discount_max' => 'numeric|nullable|min:0',
+            'number_use'   => 'integer|min:0|nullable',
             'start'        => 'required|date',
             'end'          => 'required|date|after_or_equal:start',
         ];
+
+        // If discount type is percent, cap at 100
+        if ($this->input('type') === 'percent') {
+            $rules['discount'] .= '|max:100';
+        }
+
+        return $rules;
     }
 
     public function messages() {

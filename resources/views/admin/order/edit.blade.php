@@ -20,7 +20,7 @@
 
             <tr>
                 <th>Người đặt hàng</th>
-                <td>{{ $order->User->name }}</td>
+                <td>{{ optional($order->User)->name }}</td>
             </tr>
 
             <tr>
@@ -30,7 +30,7 @@
 
             <tr>
                 <th>Tỉnh/thành phố</th>
-                <td>{{ $order->City->name }}</td>
+                <td>{{ optional($order->City)->name }}</td>
             </tr>
 
             <tr>
@@ -94,7 +94,7 @@
             <tr>
                 <th>Mã khuyến mãi</th>
                 <td>
-                    {{ $order->Coupon->name ?? '' }} : {{formatVnd(-$order->discount)}}
+                    {{ optional($order->Coupon)->name ?? '' }} : {{formatVnd(-$order->discount)}}
                 </td>
             </tr>
 

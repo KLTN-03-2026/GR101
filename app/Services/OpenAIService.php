@@ -2,202 +2,319 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
+use App\Models\Product;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class OpenAIService
 {
-    protected $apiKey;
-    protected $apiUrl;
-    protected $model;
-    protected $cacheTtl;
-    protected $useMockResponses = false;
+    protected string $provider;
+    protected ?string $openAiKey;
+    protected ?string $geminiKey;
+    protected string $model;
+    protected int $cacheTtl;
 
     public function __construct()
     {
-        $this->apiKey = config('openai.api_key');
-        $this->apiUrl = config('openai.api_url');
-        $this->model = config('openai.model');
-        $this->cacheTtl = config('openai.cache_ttl');
-        $this->useMockResponses = config('openai.use_mock', false);
-    }
-
-    public function testConnection()
-    {
-        if ($this->useMockResponses) {
-            return true;
-        }
-
-        try {
-            $response = $this->generateContent('Hello');
-            return !empty($response);
-        } catch (\Exception $e) {
-            return false;
-        }
+        $this->provider = env('AI_PROVIDER', 'openai');
+        $this->openAiKey = env('OPENAI_API_KEY');
+        $this->geminiKey = env('GEMINI_API_KEY');
+        $this->model = env('OPENAI_MODEL', config('openai.model', 'gpt-4.1-mini'));
+        $this->cacheTtl = (int) config('openai.cache_ttl', 3600);
     }
 
     public function generateContent($prompt, $useCache = true)
     {
-        if ($this->useMockResponses) {
-            return $this->getMockResponse($prompt);
+        $cacheKey = 'ai_' . $this->provider . '_' . $this->model . '_' . md5($prompt);
+        if ($useCache && Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
         }
 
-        if (!$this->apiKey) {
-            throw new \Exception('OpenAI API key not configured');
+        $result = null;
+        if ($this->provider === 'openai' && $this->openAiKey) {
+            $result = $this->callOpenAI($prompt);
         }
 
-        if ($useCache) {
-            $cacheKey = 'openai_' . md5($prompt);
-            $cached = Cache::get($cacheKey);
-            if ($cached) {
-                return $cached;
-            }
+        if (!$result && $this->geminiKey) {
+            $result = $this->callGemini($prompt);
         }
 
+        if (!$result) {
+            $result = $this->buildSmartFallback($prompt);
+        }
+
+        if ($useCache && $result) {
+            Cache::put($cacheKey, $result, $this->cacheTtl);
+        }
+
+        return $result;
+    }
+
+    protected function callOpenAI(string $prompt): ?string
+    {
         try {
-            $response = Http::timeout(30)
-                ->withHeaders([
-                    'Content-Type' => 'application/json',
-                    'Authorization' => 'Bearer ' . $this->apiKey,
-                ])
-                ->post($this->apiUrl, [
+            $response = Http::withToken($this->openAiKey)
+                ->timeout(30)
+                ->acceptJson()
+                ->post(config('openai.api_url', 'https://api.openai.com/v1/responses'), [
                     'model' => $this->model,
-                    'messages' => [
+                    'input' => [
+                        [
+                            'role' => 'system',
+                            'content' => 'Return only valid JSON. Do not include markdown or explanations.',
+                        ],
                         [
                             'role' => 'user',
-                            'content' => $prompt
-                        ]
+                            'content' => $prompt,
+                        ],
                     ],
-                    'max_tokens' => config('openai.max_tokens'),
-                    'temperature' => config('openai.temperature'),
+                    'text' => [
+                        'format' => ['type' => 'json_object'],
+                    ],
+                    'temperature' => (float) config('openai.temperature', 0.2),
+                    'max_output_tokens' => (int) config('openai.max_tokens', 2000),
                 ]);
 
-            if ($response->failed()) {
-                return $this->getMockResponse($prompt);
+            if (!$response->successful()) {
+                Log::warning('OpenAI API failed: ' . $response->status() . ' - ' . $response->body());
+                return null;
             }
 
             $data = $response->json();
-
-            if (!isset($data['choices'][0]['message']['content'])) {
-                throw new \Exception('Invalid response format from OpenAI API');
+            if (!empty($data['output_text'])) {
+                return $this->tagJsonSource($data['output_text'], 'openai');
             }
 
-            $result = $data['choices'][0]['message']['content'];
-
-            if ($useCache) {
-                Cache::put($cacheKey, $result, $this->cacheTtl);
+            $parts = [];
+            foreach (($data['output'] ?? []) as $output) {
+                foreach (($output['content'] ?? []) as $content) {
+                    if (isset($content['text'])) {
+                        $parts[] = $content['text'];
+                    }
+                }
             }
 
-            return $result;
-        } catch (\Exception $e) {
-            return $this->getMockResponse($prompt);
+            $text = trim(implode("\n", $parts));
+            return $text !== '' ? $this->tagJsonSource($text, 'openai') : null;
+        } catch (\Throwable $e) {
+            Log::warning('OpenAI API exception: ' . $e->getMessage());
+            return null;
         }
     }
 
-    protected function getMockResponse($prompt)
+    protected function callGemini(string $prompt): ?string
     {
-        $prompt = mb_strtolower($prompt);
+        try {
+            $model = env('GEMINI_MODEL', 'gemini-2.0-flash-lite');
+            $url = "https://generativelanguage.googleapis.com/v1/models/{$model}:generateContent?key={$this->geminiKey}";
 
-        if (str_contains($prompt, 'phân tích') && str_contains($prompt, 'sản phẩm')) {
-            return "**Đánh giá tổng quan:**\nSản phẩm này có hiệu suất khá tốt với tỷ lệ chuyển đổi ổn định. Tuy nhiên, tỷ lệ bỏ giỏ hàng cao cho thấy cần cải thiện trải nghiệm thanh toán.\n\n**Điểm mạnh:**\n- Lượt xem cao, thu hút được sự quan tâm\n- Sản phẩm có tiềm năng tốt\n\n**Điểm yếu:**\n- Tỷ lệ bỏ giỏ cao, cần xem xét lại giá hoặc phí vận chuyển\n- Tỷ lệ chuyển đổi còn thấp\n\n**Gợi ý cải thiện:**\n1. Xem xét giảm giá 10-15% hoặc tạo chương trình khuyến mãi\n2. Cải thiện mô tả sản phẩm và hình ảnh\n3. Thêm đánh giá và review từ khách hàng";
+            $response = Http::timeout(20)->post($url, [
+                'contents' => [['parts' => [['text' => $prompt]]]],
+                'generationConfig' => [
+                    'temperature' => 0.7,
+                    'maxOutputTokens' => 4000,
+                ],
+            ]);
+
+            if (!$response->successful()) {
+                Log::warning('Gemini API failed: ' . $response->status() . ' - ' . $response->body());
+                return null;
+            }
+
+            $data = $response->json();
+            $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
+            return $text ? $this->tagJsonSource($text, 'gemini') : null;
+        } catch (\Throwable $e) {
+            Log::warning('Gemini API exception: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    protected function buildSmartFallback(string $prompt): string
+    {
+        $dishName = $this->extractDishNameFromPrompt($prompt);
+        $localDish = DB::table('cong_thuc')
+            ->where('tenmonan', 'LIKE', "%{$dishName}%")
+            ->first();
+
+        $ingredients = [];
+        $steps = [];
+        $description = "Gợi ý nguyên liệu và cách nấu cho món {$dishName}.";
+
+        if ($localDish) {
+            $dishName = $localDish->tenmonan;
+            $description = "Công thức tham khảo cho món {$dishName} từ dữ liệu nội bộ.";
+            $ingredients = $this->parseIngredients($localDish->congthuc ?? '');
+            $steps = $this->parseSteps($localDish->congthuc ?? '');
         }
 
-        if (str_contains($prompt, 'kinh doanh') || str_contains($prompt, 'tổng quan')) {
-            return "**Đánh giá tình hình:**\nDoanh nghiệp đang có xu hướng tăng trưởng tích cực. Tỷ lệ chuyển đổi trung bình ở mức chấp nhận được, cho thấy chiến lược marketing đang phát huy hiệu quả.\n\n**Xu hướng đáng chú ý:**\n- Lượng truy cập tăng đều đặn\n- Khách hàng quan tâm đến các sản phẩm chất lượng cao\n- Nhu cầu mua sắm online đang tăng\n\n**Khuyến nghị chiến lược:**\n1. Tập trung vào các sản phẩm bán chạy nhất để tối ưu lợi nhuận\n2. Phát triển chương trình khách hàng thân thiết\n3. Đầu tư vào marketing cho các sản phẩm có tiềm năng cao";
+        if (!$ingredients) {
+            $ingredients = $this->guessIngredientsFromDishName($dishName);
         }
 
-        if (str_contains($prompt, 'giá') || str_contains($prompt, 'định giá')) {
-            return "**Giá tối ưu đề xuất:**\nDựa trên phân tích, mức giá nên giảm 10-12% so với hiện tại để tăng tính cạnh tranh.\n\n**Lý do:**\n- Tỷ lệ bỏ giỏ cao cho thấy giá hiện tại có thể cao hơn mong đợi của khách hàng\n- Cần cân bằng giữa lợi nhuận và khối lượng bán\n\n**Chiến thuật định giá:**\n1. Tạo chương trình Flash Sale giảm 15-20% trong thời gian ngắn\n2. Bundle sản phẩm với các mặt hàng liên quan để tăng giá trị đơn hàng\n3. Áp dụng giảm giá theo số lượng mua";
+        if (!$steps) {
+            $steps = [
+                'Sơ chế sạch nguyên liệu.',
+                'Chế biến theo khẩu vị gia đình.',
+                'Nêm nếm vừa ăn và dùng khi còn nóng.',
+            ];
         }
 
-        return "Dựa trên dữ liệu hiện tại, tôi khuyến nghị bạn nên tập trung vào việc cải thiện trải nghiệm khách hàng và tối ưu hóa quy trình bán hàng. Hãy theo dõi các chỉ số quan trọng như tỷ lệ chuyển đổi và tỷ lệ bỏ giỏ hàng để điều chỉnh chiến lược kịp thời.";
+        return json_encode([
+            'source' => 'fallback',
+            'ten_mon' => $dishName,
+            'mo_ta' => $description,
+            'nguyen_lieu' => $ingredients,
+            'cach_lam' => $steps,
+            // If we have a local recipe, avoid matching the dish name itself to products
+            // (user requested: don't show the dish already present in DB). Keep ingredient matches.
+            'san_pham_ids' => $this->findMatchingProducts($ingredients, $dishName, $localDish ? false : true),
+        ], JSON_UNESCAPED_UNICODE);
     }
 
-    public function analyzeProductPerformance($productData, $metrics)
+    protected function tagJsonSource(string $text, string $source): string
     {
-        $prompt = "Bạn là chuyên gia phân tích dữ liệu thương mại điện tử. Hãy phân tích hiệu suất của sản phẩm sau:
+        $start = strpos($text, '{');
+        $end = strrpos($text, '}');
+        if ($start === false || $end === false || $end <= $start) {
+            return $text;
+        }
 
-Thông tin sản phẩm:
-- Tên: {$productData['name']}
-- Giá: " . number_format($productData['price']) . " VNĐ
-- Tồn kho: {$productData['quantity']}
+        $json = substr($text, $start, $end - $start + 1);
+        $data = json_decode($json, true);
+        if (!is_array($data)) {
+            return $text;
+        }
 
-Chỉ số:
-- Lượt xem: {$metrics['views']}
-- Thêm vào giỏ: {$metrics['add_to_cart']}
-- Mua hàng: {$metrics['purchases']}
-- Tỷ lệ chuyển đổi: {$metrics['conversion_rate']}%
-- Tỷ lệ bỏ giỏ: {$metrics['abandonment_rate']}%
-
-Hãy đưa ra:
-1. Đánh giá tổng quan (2-3 câu)
-2. Điểm mạnh và điểm yếu
-3. Gợi ý cụ thể để cải thiện (tối đa 3 gợi ý)
-
-Trả lời bằng tiếng Việt, ngắn gọn và dễ hiểu.";
-
-        return $this->generateContent($prompt);
+        $data['source'] = $source;
+        return json_encode($data, JSON_UNESCAPED_UNICODE);
     }
 
-    public function generateBusinessInsights($overallMetrics)
+    protected function extractDishNameFromPrompt(string $prompt): string
     {
-        $prompt = "Bạn là chuyên gia tư vấn kinh doanh thương mại điện tử. Dựa trên dữ liệu sau, hãy đưa ra phân tích:
+        if (preg_match("/món[:\s]*['\"]?([^'\".\n]+)/iu", $prompt, $matches)) {
+            return trim($matches[1]);
+        }
 
-Tổng quan kinh doanh:
-- Tổng sản phẩm: {$overallMetrics['total_products']}
-- Tổng lượt xem: {$overallMetrics['total_views']}
-- Tổng đơn hàng: {$overallMetrics['total_orders']}
-- Doanh thu: " . number_format($overallMetrics['revenue']) . " VNĐ
-- Tỷ lệ chuyển đổi trung bình: {$overallMetrics['avg_conversion_rate']}%
+        if (preg_match("/mon[:\s]*['\"]?([^'\".\n]+)/iu", $prompt, $matches)) {
+            return trim($matches[1]);
+        }
 
-Top 3 sản phẩm bán chạy:
-" . implode("\n", array_map(fn($p) => "- {$p['name']}: {$p['sales']} đơn", $overallMetrics['top_products'])) . "
-
-Hãy đưa ra:
-1. Đánh giá tình hình kinh doanh (3-4 câu)
-2. Xu hướng đáng chú ý
-3. 3 khuyến nghị chiến lược quan trọng nhất
-
-Trả lời bằng tiếng Việt, chuyên nghiệp và súc tích.";
-
-        return $this->generateContent($prompt);
+        return 'Món ăn';
     }
 
-    public function suggestPricingStrategy($productData, $competitorPrices = [])
+    protected function parseIngredients(?string $text): array
     {
-        $competitorInfo = empty($competitorPrices)
-            ? "Không có dữ liệu đối thủ"
-            : "Giá đối thủ: " . implode(", ", array_map(fn($p) => number_format($p) . " VNĐ", $competitorPrices));
+        if (!$text) {
+            return [];
+        }
 
-        $prompt = "Bạn là chuyên gia định giá sản phẩm. Hãy tư vấn chiến lược giá cho:
+        $block = $text;
+        if (preg_match('/nguyên liệu[:\s]*(.*?)(cách làm|cách nấu|hướng dẫn|bước \d|$)/isu', $text, $matches)) {
+            $block = $matches[1];
+        }
 
-Sản phẩm: {$productData['name']}
-Giá hiện tại: " . number_format($productData['price']) . " VNĐ
-Tồn kho: {$productData['quantity']}
-Tỷ lệ bỏ giỏ: {$productData['abandonment_rate']}%
-{$competitorInfo}
+        $items = [];
+        foreach (preg_split('/[\n\r;,]+/', $block) as $line) {
+            $line = trim($line, " \t\n\r\0\x0B-*•");
+            $line = preg_replace('/^\d+[\.\)]\s*/', '', $line);
+            if ($line && mb_strlen($line) > 1 && mb_strlen($line) < 90) {
+                $items[] = $line;
+            }
+        }
 
-Hãy đề xuất:
-1. Giá tối ưu (khoảng giá cụ thể)
-2. Lý do cho mức giá đề xuất
-3. Chiến thuật định giá (giảm giá, combo, v.v.)
-
-Trả lời ngắn gọn, bằng tiếng Việt.";
-
-        return $this->generateContent($prompt);
+        return array_slice(array_values(array_unique($items)), 0, 10);
     }
 
-    public function askQuestion($question, $context)
+    protected function parseSteps(?string $text): array
     {
-        $prompt = "Bạn là trợ lý AI chuyên về phân tích dữ liệu bán hàng.
+        if (!$text) {
+            return [];
+        }
 
-Dữ liệu hiện tại:
-{$context}
+        $block = $text;
+        if (preg_match('/cách (làm|nấu)[:\s]*(.*)/isu', $text, $matches)) {
+            $block = $matches[2];
+        }
 
-Câu hỏi: {$question}
+        $steps = [];
+        foreach (preg_split('/[\n\r]+/', $block) as $line) {
+            $line = trim($line, " \t\n\r\0\x0B-*•");
+            $line = preg_replace('/^\d+[\.\)]\s*/', '', $line);
+            if ($line && mb_strlen($line) > 8) {
+                $steps[] = $line;
+            }
+        }
 
-Hãy trả lời câu hỏi dựa trên dữ liệu được cung cấp. Nếu không đủ dữ liệu, hãy nói rõ. Trả lời bằng tiếng Việt, súc tích và chính xác.";
+        return array_slice(array_values(array_unique($steps)), 0, 8);
+    }
 
-        return $this->generateContent($prompt, false);
+    protected function guessIngredientsFromDishName(string $dishName): array
+    {
+        $lower = mb_strtolower($dishName);
+        $mapping = [
+            'cá' => ['Cá', 'Nước mắm', 'Hành', 'Tỏi', 'Ớt'],
+            'thịt' => ['Thịt', 'Nước mắm', 'Hành', 'Tỏi', 'Tiêu'],
+            'gà' => ['Gà', 'Hành', 'Tỏi', 'Gừng', 'Sả'],
+            'tôm' => ['Tôm', 'Hành', 'Tỏi', 'Ớt', 'Tiêu'],
+            'bò' => ['Thịt bò', 'Hành tây', 'Tỏi', 'Tiêu', 'Dầu ăn'],
+            'heo' => ['Thịt heo', 'Hành', 'Tỏi', 'Nước mắm'],
+            'đậu' => ['Đậu hũ', 'Hành', 'Nước tương', 'Dầu ăn'],
+            'rau' => ['Rau', 'Tỏi', 'Dầu ăn', 'Nước mắm'],
+            'trứng' => ['Trứng', 'Hành', 'Nước mắm', 'Tiêu'],
+            'cơm' => ['Cơm', 'Trứng', 'Hành', 'Dầu ăn'],
+            'canh' => ['Rau', 'Nước mắm', 'Hành', 'Tỏi'],
+        ];
+
+        $ingredients = [];
+        foreach ($mapping as $keyword => $items) {
+            if (mb_strpos($lower, $keyword) !== false) {
+                $ingredients = array_merge($ingredients, $items);
+            }
+        }
+
+        return $ingredients ? array_values(array_unique($ingredients)) : [$dishName, 'Gia vị'];
+    }
+
+    protected function findMatchingProducts(array $ingredientNames, string $dishName, bool $includeDishName = true): array
+    {
+        $ids = [];
+        $searchList = $ingredientNames;
+        if ($includeDishName) {
+            $searchList = array_merge($searchList, [$dishName]);
+        }
+
+        foreach ($searchList as $name) {
+            $keyword = $this->cleanSearchKeyword($name);
+            if (!$keyword) {
+                continue;
+            }
+
+            $found = Product::where('status', 1)
+                ->where('name', 'LIKE', "%{$keyword}%")
+                ->limit(3)
+                ->pluck('id')
+                ->toArray();
+
+            $ids = array_merge($ids, $found);
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    protected function cleanSearchKeyword(string $value): ?string
+    {
+        $value = mb_strtolower(trim($value));
+        $value = preg_replace('/\b\d+([.,]\d+)?\s*(kg|g|gram|gr|ml|l|cái|quả|trái|muỗng|thìa|gói|gam|viên|tép|cây|miếng)\b/iu', '', $value);
+        $value = trim(preg_replace('/\s+/', ' ', $value));
+
+        $stopwords = ['gia vị', 'nước mắm', 'muối', 'đường', 'tiêu', 'hành', 'tỏi', 'ớt', 'dầu ăn'];
+        if ($value === '' || in_array($value, $stopwords, true) || mb_strlen($value) < 2) {
+            return null;
+        }
+
+        return $value;
     }
 }
