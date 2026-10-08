@@ -58,6 +58,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
     Route::resource('coupons', \App\Http\Controllers\Admin\CouponController::class);
 
+    Route::post('reviews/{id}/reply', [\App\Http\Controllers\Admin\ReviewController::class, 'reply'])->name('reviews.reply');
     Route::resource('reviews', \App\Http\Controllers\Admin\ReviewController::class);
 
     Route::resource('cities', \App\Http\Controllers\Admin\ShippingFeeController::class);

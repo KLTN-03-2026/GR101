@@ -132,9 +132,9 @@
                             <img class="img-full rounded-circle" src="{{ asset('uploads/about/team1.png') }}" alt="Expert">
                         </div>
                         <div class="team-content text-center">
-                            <h3>Nguyễn Văn An</h3>
+                            <h3>Võ Tuấn Dương</h3>
                             <p>Kỹ sư Nông nghiệp</p>
-                            <a href="#">an.nguyen@nongsanxanh.vn</a>
+                            <a href="#">tuan.duong@nongsanxanh.vn</a>
                             <div class="team-social">
                                 <a href="#"><i class="fa fa-facebook"></i></a>
                                 <a href="#"><i class="fa fa-twitter"></i></a>
@@ -150,9 +150,9 @@
                             <img class="img-full rounded-circle" src="{{ asset('uploads/about/team2.png') }}" alt="Expert">
                         </div>
                         <div class="team-content text-center">
-                            <h3>Trần Thị Bình</h3>
+                            <h3>Trần Văn Minh Phương</h3>
                             <p>Chuyên gia Kiểm định</p>
-                            <a href="#">binh.tran@nongsanxanh.vn</a>
+                            <a href="#">minh.phuong@nongsanxanh.vn</a>
                             <div class="team-social">
                                 <a href="#"><i class="fa fa-facebook"></i></a>
                                 <a href="#"><i class="fa fa-twitter"></i></a>
@@ -168,9 +168,9 @@
                             <img src="{{ asset('theme/user/images/team/3.png') }}" alt="Our Team Member">
                         </div>
                         <div class="team-content text-center">
-                            <h3>Lê Hoàng Nam</h3>
+                            <h3>Nguyễn Bá Tòng</h3>
                             <p>Quản lý Vận hành</p>
-                            <a href="#">nam.le@nongsanxanh.vn</a>
+                            <a href="#">tong.nguyen@nongsanxanh.vn</a>
                             <div class="team-social">
                                 <a href="#"><i class="fa fa-facebook"></i></a>
                                 <a href="#"><i class="fa fa-twitter"></i></a>
@@ -180,15 +180,16 @@
                         </div>
                     </div>
                 </div> <!-- end single team member -->
+                
                 <div class="col-lg-3 col-md-6 col-sm-6">
                     <div class="team-member mb-30 mb-sm-60 mb-xs-60">
                         <div class="team-thumb">
                             <img src="{{ asset('theme/user/images/team/4.png') }}" alt="Our Team Member">
                         </div>
                         <div class="team-content text-center">
-                            <h3>Phạm Minh Đức</h3>
+                            <h3>Nguyễn Ngọc Thịnh</h3>
                             <p>Chuyên viên Marketing</p>
-                            <a href="#">duc.pham@nongsanxanh.vn</a>
+                            <a href="#">thinh.nguyen@nongsanxanh.vn</a>
                             <div class="team-social">
                                 <a href="#"><i class="fa fa-facebook"></i></a>
                                 <a href="#"><i class="fa fa-twitter"></i></a>

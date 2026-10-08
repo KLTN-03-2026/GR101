@@ -268,6 +268,19 @@
                                             <p class="text-base text-gray-600 leading-relaxed font-medium">
                                                 {{ $review->comment }}
                                             </p>
+
+                                            @if($review->reply_content)
+                                                <div class="mt-4 bg-gray-50 p-6 rounded-2xl border-l-4 border-green-900">
+                                                    <div class="flex items-center gap-2 mb-2">
+                                                        <span class="w-2 h-2 bg-green-900 rounded-full"></span>
+                                                        <span class="text-[10px] font-black text-green-900 uppercase tracking-widest">Phản hồi từ cửa hàng</span>
+                                                        <span class="text-[9px] font-bold text-gray-300 ml-auto">{{ \Carbon\Carbon::parse($review->reply_at)->diffForHumans() }}</span>
+                                                    </div>
+                                                    <p class="text-sm text-gray-700 italic leading-relaxed">
+                                                        "{{ $review->reply_content }}"
+                                                    </p>
+                                                </div>
+                                            @endif
                                         </div>
                                     </div>
                                 @endforeach

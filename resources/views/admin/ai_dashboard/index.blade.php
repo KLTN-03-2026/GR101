@@ -1,7 +1,7 @@
 @extends('layouts.master_admin')
 @section('content')
     <div class="pagetitle">
-        <h1>🤖 AI Dashboard - Trí tuệ kinh doanh</h1>
+        <h1>AI Dashboard - Trí tuệ kinh doanh</h1>
         <nav>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route('admin.index') }}">Dashboard</a></li>
@@ -18,7 +18,7 @@
                         <!-- Bordered Tabs (product suggestions hidden; only PB21 tab) -->
                         <ul class="nav nav-tabs nav-tabs-bordered" id="borderedTab" role="tablist">
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="business-tab" data-bs-toggle="tab" data-bs-target="#bordered-business" type="button" role="tab" aria-controls="business" aria-selected="true">📊 Phân tích Chiến lược (PB21)</button>
+                                <button class="nav-link active" id="business-tab" data-bs-toggle="tab" data-bs-target="#bordered-business" type="button" role="tab" aria-controls="business" aria-selected="true">Phân tích Chiến lược</button>
                             </li>
                         </ul>
                         <div class="tab-content pt-2" id="borderedTabContent">
@@ -27,7 +27,6 @@
                             <div class="tab-pane fade show active" id="bordered-business" role="tabpanel" aria-labelledby="business-tab">
                                 <div class="mt-4 text-center" id="analysis-placeholder">
                                     <div class="py-5">
-                                        <i class="bi bi-robot display-1 text-primary mb-4"></i>
                                         <h3>AI Business Intelligence</h3>
                                         <p class="text-muted">Nhấn nút bên dưới để AI phân tích dữ liệu bán hàng thực tế tuần qua.</p>
                                         @if(auth('admin')->user()->isSuperAdmin())

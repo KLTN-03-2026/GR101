@@ -33,7 +33,7 @@
                                 <td>
                                     <div class="text-warning">
                                         @for($i = 1; $i <= 5; $i++)
-                                            <i class="fa fa-star {{ $i <= $review->rating ? '' : 'text-secondary' }}"></i>
+                                            <i class="bi bi-star-fill {{ $i <= $review->rating ? 'text-warning' : 'text-secondary' }}"></i>
                                         @endfor
                                     </div>
                                 </td>
@@ -46,11 +46,43 @@
                                     </button>
                                 </td>
                                 <td>
-                                    <form action="{{ route('admin.reviews.destroy', $review->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
-                                    </form>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#replyModal{{ $review->id }}">
+                                            Phản hồi
+                                        </button>
+                                        <form action="{{ route('admin.reviews.destroy', $review->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+                                        </form>
+                                    </div>
+
+                                    <!-- Reply Modal -->
+                                    <div class="modal fade" id="replyModal{{ $review->id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form action="{{ route('admin.reviews.reply', $review->id) }}" method="POST">
+                                                    @csrf
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Phản hồi đánh giá #{{ $review->id }}</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body text-start">
+                                                        <p><strong>Khách hàng:</strong> {{ $review->User->name ?? 'N/A' }}</p>
+                                                        <p><strong>Nội dung:</strong> {{ $review->comment }}</p>
+                                                        <div class="form-group mt-3">
+                                                            <label class="mb-2">Nội dung phản hồi:</label>
+                                                            <textarea name="reply_content" class="form-control" rows="4" required>{{ $review->reply_content }}</textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                                        <button type="submit" class="btn btn-primary">Gửi phản hồi</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach

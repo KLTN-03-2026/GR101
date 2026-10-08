@@ -34,6 +34,23 @@ class ReviewController extends Controller
     }
 
     /**
+     * Reply to the specified review.
+     */
+    public function reply(Request $request, $id)
+    {
+        $request->validate([
+            'reply_content' => 'required|string|max:1000',
+        ]);
+
+        $review = Review::findOrFail($id);
+        $review->reply_content = $request->reply_content;
+        $review->reply_at = now();
+        $review->save();
+
+        return redirect()->back()->with('success', 'Đã gửi phản hồi thành công!');
+    }
+
+    /**
      * Remove the specified review from storage.
      */
     public function destroy($id)

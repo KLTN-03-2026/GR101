@@ -1,107 +1,178 @@
-# 🍏 Dự án Nông Sản Xanh - Tích hợp Trí tuệ Nhân tạo (AI)
+# AgriAI - Website thương mại điện tử nông sản tích hợp AI
 
-Chào mừng bạn đến với dự án **Nông Sản Xanh**, một nền tảng thương mại điện tử hiện đại dành cho nông sản, được tích hợp các tính năng AI tiên tiến nhất để tối ưu hóa trải nghiệm mua sắm và quản lý kinh doanh.
+AgriAI là website bán nông sản xây dựng bằng Laravel 9, có khu vực khách hàng, khu vực quản trị, thanh toán VNPay, quản lý sản phẩm, đơn hàng, đánh giá, liên hệ, phí vận chuyển và các chức năng AI hỗ trợ mua sắm/phân tích kinh doanh.
 
-## 🚀 Tính năng nổi bật
+## Tính năng chính
 
-### 🤖 Trí tuệ Nhân tạo (AI)
-- **Gợi ý mua sắm thông minh (PB13):** AI phân tích món ăn bạn muốn nấu, cung cấp công thức chi tiết và tự động khớp các nguyên liệu hiện có trong cửa hàng. Hỗ trợ nút "Thêm tất cả vào giỏ" cực kỳ tiện lợi.
-- **Phân tích chiến lược kinh doanh (PB21):** Admin có thể yêu cầu AI phân tích dữ liệu bán hàng thực tế để đưa ra nhận định, cảnh báo rủi ro và đề xuất các chiến dịch khuyến mãi (Coupon/Flash Sale) hiệu quả.
+- Trang bán hàng: danh mục, tìm kiếm, chi tiết sản phẩm, giỏ hàng, đặt hàng và theo dõi đơn hàng.
+- Quản trị: dashboard doanh thu, sản phẩm, danh mục, thuộc tính, khách hàng, đơn hàng, mã khuyến mãi, phí vận chuyển, đánh giá và liên hệ.
+- Thanh toán: hỗ trợ VNPay và thanh toán khi nhận hàng.
+- AI gợi ý mua sắm: nhập tên món ăn để AI đề xuất công thức, nguyên liệu và sản phẩm phù hợp trong database.
+- AI phân tích chiến lược: admin có thể yêu cầu AI phân tích dữ liệu bán hàng và gợi ý hành động kinh doanh.
+- Hệ thống đánh giá sản phẩm, phản hồi đánh giá và form liên hệ.
 
-### 🛒 Thương mại điện tử
-- **Thanh toán trực tuyến:** Tích hợp cổng thanh toán **VNPay** an toàn và nhanh chóng.
-- **Quản lý đơn hàng:** Quy trình xử lý đơn hàng chuyên nghiệp từ lúc đặt hàng đến khi hoàn tất.
-- **Thống kê chuyên sâu (PB20):** Biểu đồ doanh thu trực quan, thống kê sản phẩm bán chạy và khách hàng tiềm năng bằng ECharts.
-- **Quản lý linh hoạt:** Hệ thống quản lý sản phẩm, danh mục, thuộc tính, khuyến mãi và phí vận chuyển đầy đủ.
+## Yêu cầu môi trường
 
----
+- PHP 8.0 trở lên
+- Composer
+- MySQL hoặc MariaDB
+- Node.js và npm
+- OpenSSL PHP extension
+- PDO MySQL PHP extension
 
-## 🛠 Hướng dẫn cài đặt
+## Cài đặt
 
-### 1. Yêu cầu hệ thống
-- **PHP:** >= 8.1
-- **Composer:** Phiên bản mới nhất
-- **Node.js & NPM:** Để biên dịch asset
-- **MySQL/MariaDB:** Cơ sở dữ liệu
+1. Clone hoặc giải nén dự án:
 
-### 2. Các bước cài đặt
+```bash
+git clone <repository-url>
+cd nongsanai
+```
 
-1. **Clone hoặc giải nén dự án:**
-   ```bash
-   git clone <url-repository>
-   cd nongsanai
-   ```
+2. Cài đặt thư viện PHP:
 
-2. **Cài đặt các gói phụ thuộc (Dependencies):**
-   ```bash
-   composer install
-   npm install
-   ```
+```bash
+composer install
+```
 
-3. **Cấu hình môi trường (.env):**
-   - Sao chép file `.env.example` thành `.env`:
-     ```bash
-     cp .env.example .env
-     ```
-   - Cấu hình các thông số Database:
-     ```env
-     DB_DATABASE=nongsan
-     DB_USERNAME=root
-     DB_PASSWORD=
-     ```
-   - Cấu hình **Gemini AI Key** (Bắt buộc để chạy tính năng AI):
-     ```env
-     GEMINI_API_KEY=AIzaSy... (Key của bạn)
-     OPENAI_MODEL=gemini-1.5-flash
-     ```
+3. Cài đặt thư viện frontend:
 
-4. **Tạo mã định danh ứng dụng:**
-   ```bash
-   php artisan key:generate
-   ```
+```bash
+npm install
+```
 
-5. **Di cư dữ liệu (Migration & Seeding):**
-   ```bash
-   php artisan migrate --seed
-   ```
+4. Tạo file môi trường:
 
-6. **Tạo link lưu trữ:**
-   ```bash
-   php artisan storage:link
-   ```
+```bash
+cp .env.example .env
+```
 
-7. **Biên dịch giao diện:**
-   ```bash
-   npm run dev
-   ```
+Trên Windows PowerShell có thể dùng:
 
----
+```powershell
+Copy-Item .env.example .env
+```
 
-## 💻 Cách sử dụng
+5. Tạo application key:
 
-### Chạy ứng dụng
+```bash
+php artisan key:generate
+```
+
+6. Cấu hình database trong `.env`:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=nongsanai
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+7. Cấu hình OpenAI trong `.env`:
+
+```env
+OPENAI_API_KEY=sk-proj-...
+OPENAI_MODEL=gpt-4.1-mini
+AI_PROVIDER=openai
+```
+
+Không commit `.env` hoặc API key lên Git.
+
+8. Chạy migration và seed dữ liệu:
+
+```bash
+php artisan migrate --seed
+```
+
+Nếu bạn dùng file SQL có sẵn, có thể import `nongsan.sql` vào MySQL trước hoặc thay cho bước seed tùy dữ liệu local.
+
+9. Tạo storage link:
+
+```bash
+php artisan storage:link
+```
+
+10. Build asset:
+
+```bash
+npm run dev
+```
+
+## Chạy dự án
+
 Khởi động server Laravel:
+
 ```bash
 php artisan serve
 ```
-Truy cập trang web tại: `http://127.0.0.1:8000`
 
-### Thông tin đăng nhập mặc định (Môi trường Local)
-- **Trang Admin:** `http://127.0.0.1:8000/admin/login`
-  - Email: `admin1@gmail.com`
-  - Mật khẩu: `123`
+Truy cập website:
 
-### Sử dụng AI
-- **Dành cho Người dùng:** Nhấn vào nút **"AI GỢI Ý MUA SẮM"** trên thanh Menu để bắt đầu tìm kiếm món ăn.
-- **Dành cho Admin:** Truy cập menu **"AI Dashboard"** trong trang quản trị để xem phân tích chiến lược.
+```text
+http://127.0.0.1:8000
+```
 
----
+Trang quản trị:
 
-## 📂 Cấu trúc thư mục quan trọng
-- `app/Services/AIAnalyticsService.php`: Xử lý logic phân tích AI cho Admin.
-- `app/Services/OpenAIService.php`: Lớp tích hợp chính với Gemini API.
-- `app/Http/Controllers/Web/HomeController.php`: Chứa logic gợi ý mua sắm cho người dùng.
-- `resources/views/layouts/master_user.blade.php`: Giao diện chính và Modal AI tích hợp.
+```text
+http://127.0.0.1:8000/admin/login
+```
 
----
-**Dự án được phát triển bởi Nhóm GR101 - 2026**
+Tài khoản admin mẫu tùy theo dữ liệu seed/import. Nếu dùng dữ liệu demo của dự án, kiểm tra `database/seeders/AdminSeeder.php` hoặc bảng `admins`.
+
+## Sử dụng chức năng AI
+
+### AI gợi ý mua sắm
+
+1. Vào website khách hàng.
+2. Chọn mục `AI Gợi ý mua sắm`.
+3. Nhập tên món ăn, ví dụ: `mì quảng`, `canh chua cá lóc`, `cơm chiên trứng`.
+4. Hệ thống trả về công thức, nguyên liệu và danh sách sản phẩm phù hợp để thêm vào giỏ hàng.
+
+### AI phân tích chiến lược
+
+1. Đăng nhập trang admin.
+2. Mở menu `AI Dashboard`.
+3. Nhấn `Bắt đầu phân tích ngay`.
+4. AI sẽ phân tích doanh thu, sản phẩm, đơn hàng và đưa ra gợi ý kinh doanh.
+
+## Cấu trúc quan trọng
+
+- `app/Services/OpenAIService.php`: tích hợp OpenAI và xử lý gợi ý món ăn.
+- `app/Services/AIAnalyticsService.php`: phân tích dữ liệu kinh doanh bằng AI.
+- `app/Services/AnalyticsService.php`: tổng hợp số liệu bán hàng.
+- `app/Http/Controllers/Web/HomeController.php`: xử lý trang chủ, tìm kiếm và AI gợi ý mua sắm.
+- `app/Http/Controllers/Admin/AIDashboardController.php`: xử lý AI Dashboard admin.
+- `resources/views/web/ai/recommend.blade.php`: giao diện AI gợi ý mua sắm.
+- `resources/views/admin/ai_dashboard/index.blade.php`: giao diện AI Dashboard.
+- `resources/views/layouts/master_user.blade.php`: layout chính phía khách hàng.
+- `routes/web.php`: route phía khách hàng.
+- `routes/admin.php`: route phía quản trị.
+
+## Lệnh hữu ích
+
+Xóa cache cấu hình/view/route:
+
+```bash
+php artisan optimize:clear
+```
+
+Chạy lại autoload sau khi thêm class mới:
+
+```bash
+composer dump-autoload
+```
+
+Build asset production:
+
+```bash
+npm run prod
+```
+
+## Ghi chú bảo mật
+
+- Không chia sẻ `OPENAI_API_KEY`, thông tin VNPay hoặc mật khẩu database.
+- Sau khi lộ API key, cần vào trang quản lý OpenAI để revoke key cũ và tạo key mới.
+- Khi deploy production, đặt `APP_DEBUG=false`.
